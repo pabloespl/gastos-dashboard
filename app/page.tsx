@@ -132,53 +132,91 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-lg">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-base sm:h-9 sm:w-9 sm:text-lg">
               💸
             </div>
             <span className="text-sm font-semibold text-gray-900">Gastos Dashboard</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">{user?.email}</span>
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm text-gray-500 sm:block">{user?.email}</span>
             <SignOutButton />
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+      <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8">
         {/* Título */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard de Gastos</h1>
+          <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">Dashboard de Gastos</h1>
           <p className="mt-1 text-sm text-gray-500 capitalize">{monthLabel}</p>
         </div>
 
-        {/* Cards de resumen */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {/* Cards de resumen — 2×2 en móvil, 4 en fila en sm+ */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
           {summaryCards.map((card) => (
             <div
               key={card.label}
-              className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
+              className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5"
             >
               <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
                 {card.label}
               </p>
-              <p className="mt-2 text-2xl font-bold text-gray-900">{card.value}</p>
+              <p className="mt-2 text-lg font-bold text-gray-900 sm:text-2xl">{card.value}</p>
               <p className="mt-1 text-xs text-gray-400">{card.sub}</p>
             </div>
           ))}
         </div>
 
-        {/* Tabla de transacciones */}
+        {/* Transacciones */}
         <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4 sm:px-6">
             <h2 className="text-sm font-semibold text-gray-900">Transacciones</h2>
             {totalCount > 0 && (
               <span className="text-xs text-gray-400">{totalCount} en total</span>
             )}
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Vista de tarjetas — solo en móvil */}
+          <div className="sm:hidden divide-y divide-gray-50">
+            {transactions.length === 0 ? (
+              <p className="px-4 py-12 text-center text-sm text-gray-400">
+                No hay transacciones registradas aún.
+              </p>
+            ) : (
+              transactions.map((t) => (
+                <div key={t.id} className="flex items-start justify-between px-4 py-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-gray-900">{t.merchant ?? '—'}</p>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
+                        {t.category_id ?? 'Sin categoría'}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {t.datetime ? formatChileDate(t.datetime) : '—'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-4 shrink-0 text-right">
+                    <p className="font-semibold text-gray-900 whitespace-nowrap">
+                      {t.amount != null
+                        ? t.currency === 'CLP'
+                          ? formatCLP(t.amount)
+                          : `USD ${t.amount.toFixed(2)}`
+                        : '—'}
+                    </p>
+                    <span className="mt-0.5 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                      {t.currency ?? '—'}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Vista de tabla — solo en sm+ */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">

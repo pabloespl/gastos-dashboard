@@ -1,0 +1,45 @@
+name: Sync Google Sheets → Supabase
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Token con permisos de escritura para hacer push del last_sync.txt
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run sync
+        env:
+          CI: 'true'
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/sync.js
+
+      - name: Commit last_sync.txt si cambió
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add last_sync.txt
+          if git diff --staged --quiet; then
+            echo "Sin cambios en last_sync.txt, nada que commitear."
+          else
+            git commit -m "chore: sync $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+            git push
+          fi

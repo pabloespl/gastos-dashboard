@@ -11,8 +11,9 @@ const SHEET_NAME = 'Data'
 // ── Google Sheets ─────────────────────────────────────────────────────────────
 
 function getSheetClient() {
-  const keyPath = path.resolve(__dirname, '../google-service-account.json')
-  const credentials = JSON.parse(fs.readFileSync(keyPath, 'utf8'))
+  const credentials = process.env.CI === 'true'
+    ? JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
+    : JSON.parse(fs.readFileSync(path.resolve(__dirname, '../google-service-account.json'), 'utf8'))
   const auth = new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
@@ -55,9 +56,9 @@ function writeLastSync(row) {
 // ── Supabase ──────────────────────────────────────────────────────────────────
 
 function getSupabaseAdmin() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_KEY
-  if (!url) throw new Error('NEXT_PUBLIC_SUPABASE_URL no está definida')
+  if (!url) throw new Error('SUPABASE_URL no está definida')
   if (!key) throw new Error('SUPABASE_SERVICE_KEY no está definida')
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
