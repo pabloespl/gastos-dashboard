@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { createServerClient } from '@/app/lib/supabase/server'
 import { SignOutButton } from '@/app/components/sign-out-button'
 import { Pagination } from '@/app/components/pagination'
+import { CategorySelect } from '@/app/components/CategorySelect'
 
 const PAGE_SIZE = 20
 const TZ = 'America/Santiago'
@@ -63,7 +64,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   const supabase = await createServerClient()
 
-  const [{ data: { user } }, summaryRes, tableRes] = await Promise.all([
+  const [{ data: { user } }, summaryRes, tableRes, categoriesRes] = await Promise.all([
     supabase.auth.getUser(),
 
     supabase
@@ -74,9 +75,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
     supabase
       .from('transactions')
-      .select('id, datetime, merchant, amount, currency, card_last4, category_id', { count: 'exact' })
+      .select('message_id, datetime, merchant, amount, currency, card_last4, category_id', { count: 'exact' })
       .order('datetime', { ascending: false })
       .range(from, to),
+
+    supabase
+      .from('categories')
+      .select('id, name')
+      .order('name'),
   ])
 
   // ── Summary stats ────────────────────────────────────────────────────────
@@ -102,6 +108,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const transactions = tableRes.data ?? []
   const totalCount   = tableRes.count ?? 0
   const totalPages   = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const categories   = categoriesRes.data ?? []
 
   const summaryCards = [
     {
@@ -186,13 +193,15 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               </p>
             ) : (
               transactions.map((t) => (
-                <div key={t.id} className="flex items-start justify-between px-4 py-4">
+                <div key={t.message_id} className="flex items-start justify-between px-4 py-4">
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-gray-900">{t.merchant ?? '—'}</p>
                     <div className="mt-1 flex items-center gap-2">
-                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
-                        {t.category_id ?? 'Sin categoría'}
-                      </span>
+                      <CategorySelect
+                        messageId={t.message_id}
+                        categoryId={t.category_id}
+                        categories={categories}
+                      />
                       <span className="text-xs text-gray-400">
                         {t.datetime ? formatChileDate(t.datetime) : '—'}
                       </span>
@@ -242,7 +251,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                   </tr>
                 ) : (
                   transactions.map((t) => (
-                    <tr key={t.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={t.message_id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-3 text-gray-600 whitespace-nowrap">
                         {t.datetime ? formatChileDate(t.datetime) : '—'}
                       </td>
@@ -253,7 +262,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                         {t.amount != null
                           ? t.currency === 'CLP'
                             ? formatCLP(t.amount)
-                            : t.amount.toFixed(2)
+                            : `${t.currency} ${t.amount.toFixed(2)}`
                           : '—'}
                       </td>
                       <td className="px-6 py-3">
@@ -261,8 +270,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                           {t.currency ?? '—'}
                         </span>
                       </td>
-                      <td className="px-6 py-3 text-gray-400 text-xs">
-                        {t.category_id ?? 'Sin categoría'}
+                      <td className="px-6 py-3">
+                        <CategorySelect
+                          messageId={t.message_id}
+                          categoryId={t.category_id}
+                          categories={categories}
+                        />
                       </td>
                       <td className="px-6 py-3 text-gray-500 font-mono text-xs">
                         {t.card_last4 ? `···· ${t.card_last4}` : '—'}
