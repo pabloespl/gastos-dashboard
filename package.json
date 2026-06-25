@@ -1,0 +1,15 @@
+{
+  "name": "gastos-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "sync": "node scripts/sync.js",
+    "notify": "node scripts/notify-summary.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
