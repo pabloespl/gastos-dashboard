@@ -69,13 +69,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
     supabase
       .from('transactions')
-      .select('amount, currency, category_id')
+      .select('amount, currency, category_id, categories(name)')
       .gte('datetime', start)
       .lt('datetime', end),
 
     supabase
       .from('transactions')
-      .select('message_id, datetime, merchant, amount, currency, card_last4, category_id', { count: 'exact' })
+      .select('message_id, datetime, merchant, amount, currency, card_last4, category_id, categories(name)', { count: 'exact' })
       .order('datetime', { ascending: false })
       .range(from, to),
 
@@ -97,11 +97,17 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const txnCount  = monthTxns.length
   const avgPerDay = daysElapsed > 0 ? clpTotal / daysElapsed : 0
 
-  const catFreq: Record<string, number> = {}
+  const catFreq: Record<string, { name: string; count: number }> = {}
   for (const t of monthTxns) {
-    if (t.category_id) catFreq[t.category_id] = (catFreq[t.category_id] ?? 0) + 1
+    if (t.category_id) {
+      const name = (t.categories as { name: string } | null)?.name ?? String(t.category_id)
+      catFreq[t.category_id] ??= { name, count: 0 }
+      catFreq[t.category_id].count++
+    }
   }
-  const topCategory = Object.entries(catFreq).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+  const topCategoryEntry = Object.values(catFreq).sort((a, b) => b.count - a.count)[0] ?? null
+  const topCategory = topCategoryEntry?.name ?? null
+  const topCategoryCount = topCategoryEntry?.count ?? 0
 
   // ── Table ────────────────────────────────────────────────────────────────
 
@@ -124,7 +130,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     {
       label: 'Categoría top',
       value: topCategory ?? '—',
-      sub:   topCategory ? `${catFreq[topCategory]} transacciones` : 'Sin categorías aún',
+      sub:   topCategory ? `${topCategoryCount} transacciones` : 'Sin categorías aún',
     },
     {
       label: 'Promedio por día',
@@ -200,6 +206,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                       <CategorySelect
                         messageId={t.message_id}
                         categoryId={t.category_id}
+                        categoryName={(t.categories as { name: string } | null)?.name ?? null}
                         categories={categories}
                       />
                       <span className="text-xs text-gray-400">
@@ -274,6 +281,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                         <CategorySelect
                           messageId={t.message_id}
                           categoryId={t.category_id}
+                          categoryName={(t.categories as { name: string } | null)?.name ?? null}
                           categories={categories}
                         />
                       </td>
