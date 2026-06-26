@@ -36,17 +36,17 @@ export async function middleware(request: NextRequest) {
   )
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+  } = await supabase.auth.getUser()
 
   // Sin sesión → redirigir a /login
-  if (!session) {
+  if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Email no autorizado → redirigir a /login
   const allowedEmail = process.env.NEXT_PUBLIC_ALLOWED_EMAIL
-  if (allowedEmail && session.user.email !== allowedEmail) {
+  if (allowedEmail && user.email !== allowedEmail) {
     await supabase.auth.signOut()
     return NextResponse.redirect(new URL('/login?error=unauthorized', request.url))
   }

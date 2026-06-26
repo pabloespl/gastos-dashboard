@@ -11,6 +11,7 @@ interface TransactionCardProps {
   categories: Category[]
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (merchant: string, count: number, categoryId: number, categoryName: string) => void
+  onSuccess?: () => void
 }
 
 export function TransactionCard({
@@ -18,6 +19,7 @@ export function TransactionCard({
   categories,
   onCategoryChange,
   onBulkPrompt,
+  onSuccess,
 }: TransactionCardProps) {
   return (
     <div className="flex items-start justify-between px-4 py-4">
@@ -32,6 +34,7 @@ export function TransactionCard({
             categories={categories}
             onCategoryChange={onCategoryChange}
             onBulkPrompt={onBulkPrompt}
+            onSuccess={onSuccess}
           />
           <span className="text-xs text-text-muted">
             {t.datetime ? formatChileDate(t.datetime) : '—'}

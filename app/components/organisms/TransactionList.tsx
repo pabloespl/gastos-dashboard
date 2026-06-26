@@ -9,6 +9,7 @@ interface TransactionListProps {
   categories: Category[]
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (merchant: string, count: number, categoryId: number, categoryName: string) => void
+  onSuccess?: () => void
 }
 
 export function TransactionList({
@@ -16,6 +17,7 @@ export function TransactionList({
   categories,
   onCategoryChange,
   onBulkPrompt,
+  onSuccess,
 }: TransactionListProps) {
   if (transactions.length === 0) {
     return (
@@ -34,6 +36,7 @@ export function TransactionList({
           categories={categories}
           onCategoryChange={onCategoryChange}
           onBulkPrompt={onBulkPrompt}
+          onSuccess={onSuccess}
         />
       ))}
     </div>

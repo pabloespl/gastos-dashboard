@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useTransition } from 'react'
+import { useState, useCallback, useTransition } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTransactions } from '@/app/hooks/useTransactions'
 import { DashboardSummary } from '@/app/components/organisms/DashboardSummary'
 import { TransactionTable } from '@/app/components/organisms/TransactionTable'
 import { TransactionList } from '@/app/components/organisms/TransactionList'
@@ -9,19 +10,13 @@ import { BulkCategoryBanner } from '@/app/components/organisms/BulkCategoryBanne
 import { CategoryBreakdownCard } from '@/app/components/organisms/CategoryBreakdownCard'
 import { DailySparklineCard } from '@/app/components/organisms/DailySparklineCard'
 import { SignOutButton } from '@/app/components/sign-out-button'
-import type {
-  TransactionWithCategory,
-  TransactionSummary,
-  TransactionsPaginatedResponse,
-} from '@/src/types/transaction'
-import type { Category } from '@/src/types/category'
 
 const PAGE_SIZE = 20
 
 interface BannerState {
-  merchant: string
-  count: number
-  categoryId: number
+  merchant:     string
+  count:        number
+  categoryId:   number
   categoryName: string
 }
 
@@ -30,49 +25,23 @@ interface DashboardTemplateProps {
 }
 
 export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
-  const [transactions, setTransactions] = useState<TransactionWithCategory[]>([])
-  const [categories, setCategories]     = useState<Category[]>([])
-  const [summary, setSummary]           = useState<TransactionSummary | null>(null)
-  const [pagination, setPagination]     = useState({ page: 1, totalPages: 1, total: 0 })
-  const [loading, setLoading]           = useState(true)
-  const [banner, setBanner]             = useState<BannerState | null>(null)
+  const {
+    transactions,
+    categories,
+    summary,
+    pagination,
+    loading,
+    refetch,
+    fetchPage,
+  } = useTransactions()
+
+  const [banner, setBanner]                = useState<BannerState | null>(null)
   const [bulkPending, startBulkTransition] = useTransition()
 
-  const fetchPage = useCallback(async (page: number) => {
-    setLoading(true)
-    try {
-      const res  = await fetch(`/api/transactions?page=${page}`)
-      if (!res.ok) return
-      const json = (await res.json()) as TransactionsPaginatedResponse
-      setTransactions(json.data)
-      setSummary(json.summary)
-      setPagination({
-        page:       json.pagination.page,
-        totalPages: json.pagination.totalPages,
-        total:      json.pagination.total,
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void fetchPage(1)
-    void fetch('/api/categories')
-      .then((r) => r.json())
-      .then((cats: Category[]) => setCategories(cats))
-  }, [fetchPage])
-
+  // No-op: CategoryBadgeSelect/CategorySelect own their display state for immediate
+  // feedback; the refetch triggered via onSuccess restores accuracy in the parent.
   const handleCategoryChange = useCallback(
-    (messageId: string, categoryId: number, categoryName: string) => {
-      setTransactions((prev) =>
-        prev.map((t) =>
-          t.message_id === messageId
-            ? { ...t, category_id: categoryId, categories: { name: categoryName } }
-            : t,
-        ),
-      )
-    },
+    (_messageId: string, _categoryId: number, _categoryName: string) => {},
     [],
   )
 
@@ -96,17 +65,10 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
       })
 
       if (!res.ok) return
-
-      setTransactions((prev) =>
-        prev.map((t) =>
-          t.merchant === banner.merchant && t.category_id === null
-            ? { ...t, category_id: banner.categoryId, categories: { name: banner.categoryName } }
-            : t,
-        ),
-      )
       setBanner(null)
+      refetch()
     })
-  }, [banner, transactions])
+  }, [banner, transactions, refetch])
 
   const from = (pagination.page - 1) * PAGE_SIZE + 1
   const to   = Math.min(pagination.page * PAGE_SIZE, pagination.total)
@@ -169,8 +131,14 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
 
         {summary && <DashboardSummary summary={summary} />}
 
+        {/* Chart grid dims during any refetch so stale data is visually signalled.
+            On initial load summary is null, so this block never renders while loading. */}
         {summary && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div
+            className={`grid grid-cols-1 gap-4 sm:grid-cols-2 transition-opacity duration-200 ${
+              loading ? 'opacity-50 pointer-events-none' : ''
+            }`}
+          >
             <CategoryBreakdownCard summary={summary} />
             <DailySparklineCard summary={summary} />
           </div>
@@ -184,7 +152,9 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
             )}
           </div>
 
-          {loading ? (
+          {/* Show spinner only on initial load (no data yet).
+              During a refetch the table stays visible; only the charts dim. */}
+          {loading && transactions.length === 0 ? (
             <div className="px-4 py-12 text-center text-sm text-text-muted">Cargando…</div>
           ) : (
             <>
@@ -193,12 +163,14 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
                 categories={categories}
                 onCategoryChange={handleCategoryChange}
                 onBulkPrompt={handleBulkPrompt}
+                onSuccess={refetch}
               />
               <TransactionTable
                 transactions={transactions}
                 categories={categories}
                 onCategoryChange={handleCategoryChange}
                 onBulkPrompt={handleBulkPrompt}
+                onSuccess={refetch}
               />
             </>
           )}

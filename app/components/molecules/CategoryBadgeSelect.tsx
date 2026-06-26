@@ -14,6 +14,7 @@ interface CategoryBadgeSelectProps {
   categories: Category[]
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (merchant: string, count: number, categoryId: number, categoryName: string) => void
+  onSuccess?: () => void
 }
 
 export function CategoryBadgeSelect({
@@ -24,6 +25,7 @@ export function CategoryBadgeSelect({
   categories,
   onCategoryChange,
   onBulkPrompt,
+  onSuccess,
 }: CategoryBadgeSelectProps) {
   const [current, setCurrent]         = useState<number | null>(categoryId)
   const [currentName, setCurrentName] = useState<string | null>(categoryName)
@@ -95,6 +97,7 @@ export function CategoryBadgeSelect({
       if (json.uncategorizedSiblings > 0) {
         onBulkPrompt(merchant, json.uncategorizedSiblings, cat.id, cat.name)
       }
+      onSuccess?.()
     })
   }
 

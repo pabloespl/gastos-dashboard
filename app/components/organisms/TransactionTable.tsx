@@ -12,6 +12,7 @@ interface TransactionTableProps {
   categories: Category[]
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (merchant: string, count: number, categoryId: number, categoryName: string) => void
+  onSuccess?: () => void
 }
 
 export function TransactionTable({
@@ -19,6 +20,7 @@ export function TransactionTable({
   categories,
   onCategoryChange,
   onBulkPrompt,
+  onSuccess,
 }: TransactionTableProps) {
   return (
     <div className="hidden sm:block overflow-x-auto">
@@ -72,6 +74,7 @@ export function TransactionTable({
                     categories={categories}
                     onCategoryChange={onCategoryChange}
                     onBulkPrompt={onBulkPrompt}
+                    onSuccess={onSuccess}
                   />
                 </td>
                 <td className="px-6 py-3 text-text-secondary font-mono text-xs">

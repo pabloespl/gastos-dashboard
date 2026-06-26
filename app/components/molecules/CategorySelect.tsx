@@ -13,6 +13,7 @@ interface CategorySelectProps {
   categories: Category[]
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (merchant: string, count: number, categoryId: number, categoryName: string) => void
+  onSuccess?: () => void
 }
 
 export function CategorySelect({
@@ -23,6 +24,7 @@ export function CategorySelect({
   categories,
   onCategoryChange,
   onBulkPrompt,
+  onSuccess,
 }: CategorySelectProps) {
   const [current, setCurrent] = useState<number | null>(categoryId)
   const [pending, startTransition] = useTransition()
@@ -60,6 +62,7 @@ export function CategorySelect({
       if (json.uncategorizedSiblings > 0) {
         onBulkPrompt(merchant, json.uncategorizedSiblings, parsed, name)
       }
+      onSuccess?.()
     })
   }
 
