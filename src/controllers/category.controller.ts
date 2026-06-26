@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as CategoryService from '@/src/services/category.service'
 
 export async function handleGetCategories(
-  _request: NextRequest,
+  _req: NextRequest,
 ): Promise<NextResponse> {
   try {
     const categories = await CategoryService.getAllCategories()

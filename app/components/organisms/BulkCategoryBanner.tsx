@@ -26,7 +26,7 @@ export function BulkCategoryBanner({
           Hay{' '}
           <span className="font-semibold">{count}</span>{' '}
           transacci{count === 1 ? 'ón' : 'ones'} de{' '}
-          <span className="font-semibold">"{merchant}"</span>{' '}
+          <span className="font-semibold">&quot;{merchant}&quot;</span>{' '}
           sin categorizar. ¿Asignar{' '}
           <span className="font-semibold">{categoryName}</span>{' '}
           a todas?
