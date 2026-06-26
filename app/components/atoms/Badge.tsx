@@ -5,8 +5,8 @@ interface BadgeProps {
 
 export function Badge({ label, variant = 'default' }: BadgeProps) {
   const variants: Record<string, string> = {
-    default: 'bg-gray-100 text-gray-600',
-    indigo:  'bg-indigo-50 text-indigo-600',
+    default: 'bg-bg-secondary text-text-secondary',
+    indigo:  'bg-primary-light text-primary',
   }
   return (
     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${variants[variant]}`}>

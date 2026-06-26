@@ -1,12 +1,11 @@
 'use client'
 
-import { Badge } from '@/app/components/atoms/Badge'
-import { CategorySelect } from '@/app/components/molecules/CategorySelect'
+import { CategoryBadgeSelect } from '@/app/components/molecules/CategoryBadgeSelect'
 import { formatCLP, formatChileDate } from '@/app/lib/utils'
 import type { TransactionWithCategory } from '@/src/types/transaction'
 import type { Category } from '@/src/types/category'
 
-const TABLE_COLUMNS = ['Fecha', 'Comercio', 'Monto', 'Moneda', 'Categoría', 'Tarjeta']
+const TABLE_COLUMNS = ['Fecha', 'Comercio', 'Monto', 'Categoría', 'Tarjeta']
 
 interface TransactionTableProps {
   transactions: TransactionWithCategory[]
@@ -25,32 +24,39 @@ export function TransactionTable({
     <div className="hidden sm:block overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-100 bg-gray-50">
+          <tr className="border-b border-border bg-bg-secondary">
             {TABLE_COLUMNS.map((col) => (
               <th
                 key={col}
-                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400"
+                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-text-muted"
               >
                 {col}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className="divide-y divide-border">
           {transactions.length === 0 ? (
             <tr>
-              <td colSpan={TABLE_COLUMNS.length} className="px-6 py-12 text-center text-sm text-gray-400">
+              <td colSpan={TABLE_COLUMNS.length} className="px-6 py-12 text-center text-sm text-text-muted">
                 No hay transacciones registradas aún.
               </td>
             </tr>
           ) : (
             transactions.map((t) => (
-              <tr key={t.message_id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-3 text-gray-600 whitespace-nowrap">
+              <tr key={t.message_id} className="hover:bg-bg-secondary transition-colors">
+                <td className="px-6 py-3 text-text-secondary whitespace-nowrap">
                   {t.datetime ? formatChileDate(t.datetime) : '—'}
                 </td>
-                <td className="px-6 py-3 text-gray-900 font-medium">{t.merchant ?? '—'}</td>
-                <td className="px-6 py-3 text-gray-900 whitespace-nowrap">
+                <td className="px-6 py-3">
+                  <span
+                    className="block max-w-[200px] truncate font-medium text-text-primary"
+                    title={t.merchant ?? ''}
+                  >
+                    {t.merchant ?? '—'}
+                  </span>
+                </td>
+                <td className="px-6 py-3 text-right tabular-nums text-text-primary whitespace-nowrap">
                   {t.amount != null
                     ? t.currency === 'CLP'
                       ? formatCLP(t.amount)
@@ -58,10 +64,7 @@ export function TransactionTable({
                     : '—'}
                 </td>
                 <td className="px-6 py-3">
-                  <Badge label={t.currency ?? '—'} />
-                </td>
-                <td className="px-6 py-3">
-                  <CategorySelect
+                  <CategoryBadgeSelect
                     messageId={t.message_id}
                     merchant={t.merchant ?? ''}
                     categoryId={t.category_id}
@@ -71,7 +74,7 @@ export function TransactionTable({
                     onBulkPrompt={onBulkPrompt}
                   />
                 </td>
-                <td className="px-6 py-3 text-gray-500 font-mono text-xs">
+                <td className="px-6 py-3 text-text-secondary font-mono text-xs">
                   {t.card_last4 ? `···· ${t.card_last4}` : '—'}
                 </td>
               </tr>

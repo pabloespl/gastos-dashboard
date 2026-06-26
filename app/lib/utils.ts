@@ -23,6 +23,7 @@ export interface MonthBounds {
   start: string
   end: string
   daysElapsed: number
+  daysInMonth: number
   monthLabel: string
 }
 
@@ -39,10 +40,15 @@ export function getMonthBounds(): MonthBounds {
   const month = parseInt(parts.find(p => p.type === 'month')!.value)
   const day   = parseInt(parts.find(p => p.type === 'day')!.value)
 
+  const startTs    = new Date(Date.UTC(year, month - 1, 1))
+  const endTs      = new Date(Date.UTC(year, month, 1))
+  const daysInMonth = (endTs.getTime() - startTs.getTime()) / 86_400_000
+
   return {
-    start:       new Date(Date.UTC(year, month - 1, 1)).toISOString(),
-    end:         new Date(Date.UTC(year, month, 1)).toISOString(),
+    start:       startTs.toISOString(),
+    end:         endTs.toISOString(),
     daysElapsed: day,
-    monthLabel:  now.toLocaleString('es-CL', { month: 'long', year: 'numeric', timeZone: TZ }),
+    daysInMonth,
+    monthLabel:  now.toLocaleString('es-CL', { month: 'long', timeZone: TZ }) + ' ' + year,
   }
 }

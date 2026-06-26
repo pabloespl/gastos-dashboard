@@ -3,20 +3,64 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-card: #ffffff;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
+
+  /* Primary/Accent */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-light: #eef2ff;
+  --color-primary-muted: #818cf8;
+  --color-primary-bar: #6366f1;
+
+  /* Categorías */
+  --color-cat-transporte-bg: #dbeafe;
+  --color-cat-transporte-text: #1d4ed8;
+  --color-cat-transporte-bar: #60a5fa;
+  --color-cat-restaurantes-bg: #dcfce7;
+  --color-cat-restaurantes-text: #15803d;
+  --color-cat-restaurantes-bar: #4ade80;
+  --color-cat-comida-bg: #ffedd5;
+  --color-cat-comida-text: #c2410c;
+  --color-cat-comida-bar: #fb923c;
+  --color-cat-salud-bg: #fce7f3;
+  --color-cat-salud-text: #9d174d;
+  --color-cat-salud-bar: #f472b6;
+  --color-cat-supermercado-bg: #ccfbf1;
+  --color-cat-supermercado-text: #0f766e;
+  --color-cat-supermercado-bar: #2dd4bf;
+  --color-cat-entretenimiento-bg: #ede9fe;
+  --color-cat-entretenimiento-text: #6d28d9;
+  --color-cat-entretenimiento-bar: #c084fc;
+  --color-cat-suscripciones-bg: #fef3c7;
+  --color-cat-suscripciones-text: #92400e;
+  --color-cat-suscripciones-bar: #fbbf24;
+  --color-cat-otros-bg: #f3f4f6;
+  --color-cat-otros-text: #4b5563;
+  --color-cat-otros-bar: #d1d5db;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="dark"] {
+  /* Placeholders — mismos valores que light mode hasta que se implemente dark mode */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-card: #ffffff;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
 

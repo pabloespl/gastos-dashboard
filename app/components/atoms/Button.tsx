@@ -18,9 +18,9 @@ export function Button({
     md: 'px-4 py-2 text-sm',
   }
   const variants: Record<string, string> = {
-    primary:   'bg-indigo-600 text-white hover:bg-indigo-700',
-    secondary: 'border border-gray-200 text-gray-600 hover:bg-gray-50',
-    ghost:     'text-gray-600 hover:bg-gray-100',
+    primary:   'bg-primary text-white hover:bg-primary-hover',
+    secondary: 'border border-border text-text-secondary hover:bg-bg-secondary',
+    ghost:     'text-text-secondary hover:bg-bg-secondary',
   }
 
   return (

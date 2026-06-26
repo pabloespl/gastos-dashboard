@@ -19,14 +19,14 @@ export function TransactionList({
 }: TransactionListProps) {
   if (transactions.length === 0) {
     return (
-      <p className="sm:hidden px-4 py-12 text-center text-sm text-gray-400">
+      <p className="sm:hidden px-4 py-12 text-center text-sm text-text-muted">
         No hay transacciones registradas aún.
       </p>
     )
   }
 
   return (
-    <div className="sm:hidden divide-y divide-gray-50">
+    <div className="sm:hidden divide-y divide-border">
       {transactions.map((t) => (
         <TransactionCard
           key={t.message_id}

@@ -22,7 +22,7 @@ export function TransactionCard({
   return (
     <div className="flex items-start justify-between px-4 py-4">
       <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold text-gray-900">{t.merchant ?? '—'}</p>
+        <p className="truncate font-semibold text-text-primary">{t.merchant ?? '—'}</p>
         <div className="mt-1 flex items-center gap-2">
           <CategorySelect
             messageId={t.message_id}
@@ -33,13 +33,13 @@ export function TransactionCard({
             onCategoryChange={onCategoryChange}
             onBulkPrompt={onBulkPrompt}
           />
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-text-muted">
             {t.datetime ? formatChileDate(t.datetime) : '—'}
           </span>
         </div>
       </div>
       <div className="ml-4 shrink-0 text-right">
-        <p className="font-semibold text-gray-900 whitespace-nowrap">
+        <p className="font-semibold text-text-primary whitespace-nowrap">
           {t.amount != null
             ? t.currency === 'CLP'
               ? formatCLP(t.amount)

@@ -13,6 +13,16 @@ export interface TransactionWithCategory extends Transaction {
   categories: { name: string } | null
 }
 
+export interface CategoryTotal {
+  name: string
+  total: number
+}
+
+export interface DayTotal {
+  date: string
+  total: number
+}
+
 export interface TransactionSummary {
   clpTotal: number
   usdTotal: number
@@ -22,6 +32,9 @@ export interface TransactionSummary {
   avgPerDay: number
   monthLabel: string
   daysElapsed: number
+  daysInMonth: number
+  categoryBreakdown: CategoryTotal[]
+  dailyTotals: DayTotal[]
 }
 
 export interface TransactionsPaginatedResponse {

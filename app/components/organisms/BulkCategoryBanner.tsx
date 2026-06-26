@@ -21,8 +21,8 @@ export function BulkCategoryBanner({
 }: BulkCategoryBannerProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center p-4 pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-xl rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-lg">
-        <p className="text-sm text-gray-700">
+      <div className="pointer-events-auto w-full max-w-xl rounded-2xl border border-border-strong bg-bg-card px-5 py-4 shadow-lg">
+        <p className="text-sm text-text-primary">
           Hay{' '}
           <span className="font-semibold">{count}</span>{' '}
           transacci{count === 1 ? 'ón' : 'ones'} de{' '}
