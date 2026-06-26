@@ -40,10 +40,7 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
 
   // No-op: CategoryBadgeSelect/CategorySelect own their display state for immediate
   // feedback; the refetch triggered via onSuccess restores accuracy in the parent.
-  const handleCategoryChange = useCallback(
-    (_messageId: string, _categoryId: number, _categoryName: string) => {},
-    [],
-  )
+  const handleCategoryChange = useCallback(() => {}, [])
 
   const handleBulkPrompt = useCallback(
     (merchant: string, count: number, categoryId: number, categoryName: string) => {
