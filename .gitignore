@@ -36,3 +36,6 @@ npm-debug.log*
 # Editor
 .vscode/
 .idea/
+
+# Supabase
+supabase/.temp
