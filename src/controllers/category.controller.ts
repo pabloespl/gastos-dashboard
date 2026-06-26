@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as CategoryService from '@/src/services/category.service'
 
 export async function handleGetCategories(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _req: NextRequest,
 ): Promise<NextResponse> {
   try {
