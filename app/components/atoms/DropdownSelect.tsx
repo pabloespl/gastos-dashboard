@@ -88,7 +88,7 @@ export function DropdownSelect({
 
       {open && (
         <div className={`absolute left-0 z-50 min-w-max max-w-xs rounded-md border border-border bg-bg-card shadow-lg ${panelPositionCls}`}>
-          <ul className="max-h-60 overflow-y-auto py-1">
+          <ul className="max-h-60 overflow-y-auto p-1">
             {options.map(option => (
               <li key={option.value}>
                 <button
@@ -97,8 +97,8 @@ export function DropdownSelect({
                     onChange(option.value)
                     setOpen(false)
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-bg-secondary ${
-                    option.value === value ? 'font-medium text-primary' : 'text-text-primary'
+                  className={`w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-bg-hover active:bg-bg-hover-strong transition-colors ${
+                    option.value === value ? 'font-medium text-text-primary' : 'text-text-primary'
                   }`}
                 >
                   {renderOption ? renderOption(option) : option.label}

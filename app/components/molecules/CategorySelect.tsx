@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
-import { Select } from '@/app/components/atoms/Select'
+import { createPortal } from 'react-dom'
+import { ChevronDown } from 'lucide-react'
+import { CategoryBadge } from '@/app/components/atoms/CategoryBadge'
+import { useCategoryDropdown } from '@/app/hooks/useCategoryDropdown'
 import type { Category } from '@/src/types/category'
-import type { PatchTransactionResponse } from '@/src/types/transaction'
 
 interface CategorySelectProps {
   messageId: string
@@ -26,51 +27,68 @@ export function CategorySelect({
   onBulkPrompt,
   onSuccess,
 }: CategorySelectProps) {
-  const [current, setCurrent] = useState<number | null>(categoryId)
-  const [pending, startTransition] = useTransition()
+  const {
+    current,
+    currentName,
+    open,
+    dropdownPos,
+    mounted,
+    pending,
+    buttonRef,
+    dropdownRef,
+    handleOpen,
+    handleSelect,
+  } = useCategoryDropdown({ categoryId, categoryName, messageId, merchant, onCategoryChange, onBulkPrompt, onSuccess })
 
-  useEffect(() => {
-    setCurrent(categoryId)
-  }, [categoryId])
-
-  const options =
-    categories.length > 0
-      ? categories.map((c) => ({ value: c.id, label: c.name }))
-      : current !== null && categoryName
-        ? [{ value: current, label: categoryName }]
-        : []
-
-  function handleChange(val: string) {
-    const parsed = val === '' ? null : parseInt(val, 10)
-    const name = categories.find((c) => c.id === parsed)?.name ?? ''
-    setCurrent(parsed)
-
-    if (parsed === null) return
-
-    startTransition(async () => {
-      const res = await fetch(`/api/transactions/${messageId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category_id: parsed }),
-      })
-
-      if (!res.ok) return
-
-      const json = (await res.json()) as PatchTransactionResponse
-      onCategoryChange(messageId, parsed, name)
-
-      onBulkPrompt(messageId, merchant, json.uncategorizedSiblings, json.categorizedSiblings, parsed, name)
-      onSuccess?.()
-    })
-  }
+  const dropdown = open && categories.length > 0 && (
+    <div
+      ref={dropdownRef}
+      role="listbox"
+      style={
+        dropdownPos.dir === 'down'
+          ? { top: dropdownPos.top, left: dropdownPos.left }
+          : { bottom: dropdownPos.bottom, left: dropdownPos.left }
+      }
+      className="fixed z-50 w-48 rounded-xl border border-border bg-bg-card p-1 shadow-lg"
+    >
+      {categories.map((cat) => (
+        <button
+          key={cat.id}
+          role="option"
+          aria-selected={cat.id === current}
+          onClick={() => handleSelect(cat)}
+          className={`flex w-full items-center rounded-lg px-3 py-1.5 transition-colors hover:bg-bg-hover active:bg-bg-hover-strong ${
+            cat.id === current ? 'font-medium' : ''
+          }`}
+        >
+          <CategoryBadge name={cat.name} />
+        </button>
+      ))}
+    </div>
+  )
 
   return (
-    <Select
-      options={options}
-      value={current}
-      onChange={handleChange}
-      placeholder="Sin categoría"
-      disabled={pending}
-    />
+    <div className="relative">
+      <button
+        ref={buttonRef}
+        onClick={handleOpen}
+        disabled={pending}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`flex w-full items-center justify-between gap-2 rounded-md border bg-bg-secondary px-3 py-1.5 text-sm transition-colors hover:border-border-strong disabled:opacity-50 ${
+          open ? 'border-primary' : 'border-border'
+        }`}
+      >
+        {currentName
+          ? <CategoryBadge name={currentName} />
+          : <span className="text-text-muted">Sin categoría</span>
+        }
+        <ChevronDown
+          size={14}
+          className={`shrink-0 text-text-muted transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {mounted && createPortal(dropdown, document.body)}
+    </div>
   )
 }
