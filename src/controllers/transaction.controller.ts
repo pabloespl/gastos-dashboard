@@ -4,11 +4,10 @@ import * as TransactionService from '@/src/services/transaction.service'
 export async function handleGetTransactions(
   request: NextRequest,
 ): Promise<NextResponse> {
-  const pageParam = new URL(request.url).searchParams.get('page')
-  const page = Math.max(1, parseInt(pageParam ?? '1', 10))
+  const monthParam = new URL(request.url).searchParams.get('month') ?? undefined
 
   try {
-    const result = await TransactionService.getTransactionsPage(page)
+    const result = await TransactionService.getTransactions(monthParam)
     return NextResponse.json(result)
   } catch (err) {
     console.error('[transactions] GET error:', err)

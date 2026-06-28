@@ -11,9 +11,29 @@ export async function getMonthTransactions(
     .select('message_id, datetime, merchant, amount, currency, card_last4, category_id, category_override, categories(name)')
     .gte('datetime', startDate)
     .lt('datetime', endDate)
+    .order('datetime', { ascending: false })
 
   if (error) throw new Error(error.message)
   return (data ?? []) as unknown as TransactionWithCategory[]
+}
+
+export async function getDistinctMonths(): Promise<string[]> {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('datetime')
+
+  if (error) throw new Error(error.message)
+
+  const TZ  = 'America/Santiago'
+  const fmt = new Intl.DateTimeFormat('sv', { timeZone: TZ })
+  const seen = new Set<string>()
+
+  for (const row of (data ?? []) as { datetime: string }[]) {
+    seen.add(fmt.format(new Date(row.datetime)).substring(0, 7))
+  }
+
+  return Array.from(seen).sort().reverse()
 }
 
 export async function getPaginatedTransactions(

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useCallback, useTransition } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useCallback, useEffect, useTransition } from 'react'
 import { useTransactions } from '@/app/hooks/useTransactions'
+import { useTransactionFilters } from '@/app/hooks/useTransactionFilters'
+import type { TransactionFilters } from '@/app/hooks/useTransactionFilters'
+import { usePagination } from '@/app/hooks/usePagination'
 import { DashboardSummary } from '@/app/components/organisms/DashboardSummary'
 import { TransactionTable } from '@/app/components/organisms/TransactionTable'
 import { TransactionList } from '@/app/components/organisms/TransactionList'
@@ -10,8 +12,9 @@ import { BulkCategoryBanner } from '@/app/components/organisms/BulkCategoryBanne
 import { CategoryBreakdownCard } from '@/app/components/organisms/CategoryBreakdownCard'
 import { DailySparklineCard } from '@/app/components/organisms/DailySparklineCard'
 import { UserMenu } from '@/app/components/UserMenu'
-
-const PAGE_SIZE = 20
+import { FilterBar } from '@/app/components/molecules/FilterBar'
+import { PaginationBar } from '@/app/components/molecules/PaginationBar'
+import type { MonthOption } from '@/src/types/transaction'
 
 interface BannerState {
   messageId:          string
@@ -32,14 +35,45 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
     transactions,
     categories,
     summary,
-    pagination,
     loading,
     refetch,
-    fetchPage,
+    fetchMonth,
   } = useTransactions()
 
+  const { filters, setFilters, filteredTransactions, hasActiveFilters } =
+    useTransactionFilters(transactions)
+
+  const {
+    paginatedItems,
+    page,
+    pageSize,
+    totalPages,
+    goTo,
+    next,
+    prev,
+    setPageSize,
+  } = usePagination(filteredTransactions, 20)
+
+  const [months, setMonths]                = useState<MonthOption[]>([])
   const [banner, setBanner]                = useState<BannerState | null>(null)
   const [bulkPending, startBulkTransition] = useTransition()
+
+  useEffect(() => {
+    void fetch('/api/transactions/months')
+      .then(r => r.json())
+      .then((data: MonthOption[]) => setMonths(data))
+  }, [])
+
+  const handleFiltersChange = useCallback(
+    (newFilters: TransactionFilters) => {
+      if (newFilters.month !== filters.month) {
+        fetchMonth(newFilters.month)
+      }
+      setFilters(newFilters)
+      goTo(1)
+    },
+    [filters.month, fetchMonth, setFilters, goTo],
+  )
 
   // No-op: CategoryBadgeSelect/CategorySelect own their display state for immediate
   // feedback; the refetch triggered via onSuccess restores accuracy in the parent.
@@ -75,38 +109,6 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
       refetch()
     })
   }, [banner, refetch])
-
-  const from = (pagination.page - 1) * PAGE_SIZE + 1
-  const to   = Math.min(pagination.page * PAGE_SIZE, pagination.total)
-
-  const paginationBar = pagination.totalPages > 1 && (
-    <div className="sticky bottom-0 z-10 flex items-center justify-between border-t border-border bg-bg-card px-4 py-3 sm:px-6">
-      <p className="text-xs text-text-muted">
-        {from}–{to} de {pagination.total} transacciones
-      </p>
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => void fetchPage(pagination.page - 1)}
-          disabled={pagination.page === 1 || loading}
-          aria-label="Página anterior"
-          className="flex h-7 w-7 items-center justify-center rounded-md border border-border-strong text-text-secondary hover:bg-bg-secondary disabled:pointer-events-none disabled:border-border disabled:text-text-muted"
-        >
-          <ChevronLeft size={14} />
-        </button>
-        <span className="min-w-[3rem] text-center text-xs tabular-nums text-text-secondary">
-          {pagination.page} / {pagination.totalPages}
-        </span>
-        <button
-          onClick={() => void fetchPage(pagination.page + 1)}
-          disabled={pagination.page === pagination.totalPages || loading}
-          aria-label="Página siguiente"
-          className="flex h-7 w-7 items-center justify-center rounded-md border border-border-strong text-text-secondary hover:bg-bg-secondary disabled:pointer-events-none disabled:border-border disabled:text-text-muted"
-        >
-          <ChevronRight size={14} />
-        </button>
-      </div>
-    </div>
-  )
 
   return (
     <div className="min-h-screen bg-bg-secondary">
@@ -150,10 +152,22 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
         <div className="rounded-2xl border border-border bg-bg-card shadow-sm">
           <div className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-6">
             <h2 className="text-sm font-semibold text-text-primary">Transacciones</h2>
-            {pagination.total > 0 && (
-              <span className="text-xs text-text-muted">{pagination.total} en total</span>
+            {transactions.length > 0 && (
+              <span className="text-xs text-text-muted">
+                {hasActiveFilters
+                  ? `${filteredTransactions.length} de ${transactions.length}`
+                  : `${transactions.length} en total`}
+              </span>
             )}
           </div>
+
+          <FilterBar
+            categories={categories}
+            months={months}
+            filters={filters}
+            onChange={handleFiltersChange}
+            hasActiveFilters={hasActiveFilters}
+          />
 
           {/* Show spinner only on initial load (no data yet).
               During a refetch the table stays visible; only the charts dim. */}
@@ -162,14 +176,14 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
           ) : (
             <>
               <TransactionList
-                transactions={transactions}
+                transactions={paginatedItems}
                 categories={categories}
                 onCategoryChange={handleCategoryChange}
                 onBulkPrompt={handleBulkPrompt}
                 onSuccess={refetch}
               />
               <TransactionTable
-                transactions={transactions}
+                transactions={paginatedItems}
                 categories={categories}
                 onCategoryChange={handleCategoryChange}
                 onBulkPrompt={handleBulkPrompt}
@@ -178,7 +192,17 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
             </>
           )}
 
-          {paginationBar}
+          {filteredTransactions.length > 0 && (
+            <PaginationBar
+              page={page}
+              pageSize={pageSize}
+              totalPages={totalPages}
+              totalItems={filteredTransactions.length}
+              onPrev={prev}
+              onNext={next}
+              onPageSizeChange={setPageSize}
+            />
+          )}
         </div>
       </main>
 

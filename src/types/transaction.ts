@@ -37,14 +37,8 @@ export interface TransactionSummary {
   dailyTotals: DayTotal[]
 }
 
-export interface TransactionsPaginatedResponse {
+export interface TransactionsResponse {
   data: TransactionWithCategory[]
-  pagination: {
-    page: number
-    pageSize: number
-    total: number
-    totalPages: number
-  }
   summary: TransactionSummary
 }
 
@@ -52,4 +46,9 @@ export interface PatchTransactionResponse {
   merchant: string
   uncategorizedSiblings: number
   categorizedSiblings: number
+}
+
+export interface MonthOption {
+  value: string  // "YYYY-MM"
+  label: string  // "junio 2025"
 }

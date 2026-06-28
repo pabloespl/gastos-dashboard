@@ -52,3 +52,39 @@ export function getMonthBounds(): MonthBounds {
     monthLabel:  now.toLocaleString('es-CL', { month: 'long', timeZone: TZ }) + ' ' + year,
   }
 }
+
+export function getMonthBoundsFor(yearMonth: string): MonthBounds {
+  const [yearStr, monthStr] = yearMonth.split('-')
+  const year  = parseInt(yearStr, 10)
+  const month = parseInt(monthStr, 10)
+
+  const currentYearMonth = new Intl.DateTimeFormat('sv', { timeZone: TZ })
+    .format(new Date())
+    .substring(0, 7)
+
+  const startTs     = new Date(Date.UTC(year, month - 1, 1))
+  const endTs       = new Date(Date.UTC(year, month, 1))
+  const daysInMonth = (endTs.getTime() - startTs.getTime()) / 86_400_000
+
+  let daysElapsed: number
+  if (yearMonth === currentYearMonth) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: TZ,
+      day: '2-digit',
+    }).formatToParts(new Date())
+    daysElapsed = parseInt(parts.find(p => p.type === 'day')!.value, 10)
+  } else {
+    daysElapsed = daysInMonth
+  }
+
+  const midMonthTs = new Date(Date.UTC(year, month - 1, 15))
+  const monthLabel = midMonthTs.toLocaleString('es-CL', { month: 'long', timeZone: TZ }) + ' ' + year
+
+  return {
+    start: startTs.toISOString(),
+    end:   endTs.toISOString(),
+    daysElapsed,
+    daysInMonth,
+    monthLabel,
+  }
+}

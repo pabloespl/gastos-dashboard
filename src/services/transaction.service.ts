@@ -1,37 +1,23 @@
 import * as TransactionModel from '@/src/models/transaction.model'
-import { getMonthBounds } from '@/app/lib/utils'
+import { getMonthBounds, getMonthBoundsFor } from '@/app/lib/utils'
 import type {
   TransactionWithCategory,
   TransactionSummary,
-  TransactionsPaginatedResponse,
+  TransactionsResponse,
   PatchTransactionResponse,
   CategoryTotal,
   DayTotal,
 } from '@/src/types/transaction'
 
-const PAGE_SIZE = 20
+export async function getTransactions(month?: string): Promise<TransactionsResponse> {
+  const { start, end, daysElapsed, daysInMonth, monthLabel } =
+    month ? getMonthBoundsFor(month) : getMonthBounds()
 
-export async function getTransactionsPage(
-  page: number,
-): Promise<TransactionsPaginatedResponse> {
-  const { start, end, daysElapsed, daysInMonth, monthLabel } = getMonthBounds()
-  const from = (page - 1) * PAGE_SIZE
-  const to   = from + PAGE_SIZE - 1
-
-  const [paginatedResult, monthTxns] = await Promise.all([
-    TransactionModel.getPaginatedTransactions(from, to),
-    TransactionModel.getMonthTransactions(start, end),
-  ])
+  const txns = await TransactionModel.getMonthTransactions(start, end)
 
   return {
-    data: paginatedResult.data,
-    pagination: {
-      page,
-      pageSize: PAGE_SIZE,
-      total: paginatedResult.count,
-      totalPages: Math.max(1, Math.ceil(paginatedResult.count / PAGE_SIZE)),
-    },
-    summary: computeSummary(monthTxns, daysElapsed, daysInMonth, monthLabel),
+    data: txns,
+    summary: computeSummary(txns, daysElapsed, daysInMonth, monthLabel),
   }
 }
 
