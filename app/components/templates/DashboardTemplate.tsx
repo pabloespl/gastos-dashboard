@@ -9,7 +9,7 @@ import { TransactionList } from '@/app/components/organisms/TransactionList'
 import { BulkCategoryBanner } from '@/app/components/organisms/BulkCategoryBanner'
 import { CategoryBreakdownCard } from '@/app/components/organisms/CategoryBreakdownCard'
 import { DailySparklineCard } from '@/app/components/organisms/DailySparklineCard'
-import { SignOutButton } from '@/app/components/sign-out-button'
+import { UserMenu } from '@/app/components/UserMenu'
 
 const PAGE_SIZE = 20
 
@@ -24,9 +24,10 @@ interface BannerState {
 
 interface DashboardTemplateProps {
   userEmail?: string
+  fullName?: string | null
 }
 
-export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
+export function DashboardTemplate({ userEmail, fullName = null }: DashboardTemplateProps) {
   const {
     transactions,
     categories,
@@ -118,10 +119,7 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
             <span className="text-sm font-semibold text-text-primary">Gastos Dashboard</span>
           </div>
           <div className="flex items-center gap-3">
-            {userEmail && (
-              <span className="hidden text-sm text-text-secondary sm:block">{userEmail}</span>
-            )}
-            <SignOutButton />
+            <UserMenu email={userEmail ?? ''} fullName={fullName} />
           </div>
         </div>
       </header>

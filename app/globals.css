@@ -50,15 +50,95 @@
 }
 
 [data-theme="dark"] {
-  /* Placeholders — mismos valores que light mode hasta que se implemente dark mode */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f9fafb;
-  --color-bg-card: #ffffff;
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #9ca3af;
-  --color-border: #e5e7eb;
-  --color-border-strong: #d1d5db;
+  --color-bg-primary: #0d1117;
+  --color-bg-secondary: #161b22;
+  --color-bg-card: #161b22;
+  --color-text-primary: #e6edf3;
+  --color-text-secondary: #8d96a0;
+  --color-text-muted: #656d76;
+  --color-border: #30363d;
+  --color-border-strong: #444c56;
+
+  --color-primary: #6e86c8;
+  --color-primary-hover: #7d94d4;
+  --color-primary-light: #1c2333;
+  --color-primary-muted: #8b9dc3;
+  --color-primary-bar: #7b8ec8;
+
+  --color-cat-transporte-bg: #112240;
+  --color-cat-transporte-text: #79b8ff;
+  --color-cat-transporte-bar: #388bfd;
+  --color-cat-restaurantes-bg: #0d2b1a;
+  --color-cat-restaurantes-text: #56d364;
+  --color-cat-restaurantes-bar: #2ea043;
+  --color-cat-comida-bg: #2b1a0d;
+  --color-cat-comida-text: #ffa657;
+  --color-cat-comida-bar: #d4810a;
+  --color-cat-salud-bg: #2b0d1f;
+  --color-cat-salud-text: #f778ba;
+  --color-cat-salud-bar: #bf4b8a;
+  --color-cat-supermercado-bg: #0d2626;
+  --color-cat-supermercado-text: #39d3bb;
+  --color-cat-supermercado-bar: #1b9e8a;
+  --color-cat-entretenimiento-bg: #1e1433;
+  --color-cat-entretenimiento-text: #c084fc;
+  --color-cat-entretenimiento-bar: #8957e5;
+  --color-cat-suscripciones-bg: #2b2006;
+  --color-cat-suscripciones-text: #f0b429;
+  --color-cat-suscripciones-bar: #bb8009;
+  --color-cat-otros-bg: #1c1c1c;
+  --color-cat-otros-text: #8d96a0;
+  --color-cat-otros-bar: #444c56;
+  --color-cat-compras-bg: #2b0d0d;
+  --color-cat-compras-text: #ff7b72;
+  --color-cat-compras-bar: #b62324;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg-primary: #0d1117;
+    --color-bg-secondary: #161b22;
+    --color-bg-card: #161b22;
+    --color-text-primary: #e6edf3;
+    --color-text-secondary: #8d96a0;
+    --color-text-muted: #656d76;
+    --color-border: #30363d;
+    --color-border-strong: #444c56;
+
+    --color-primary: #6e86c8;
+    --color-primary-hover: #7d94d4;
+    --color-primary-light: #1c2333;
+    --color-primary-muted: #8b9dc3;
+    --color-primary-bar: #7b8ec8;
+
+    --color-cat-transporte-bg: #112240;
+    --color-cat-transporte-text: #79b8ff;
+    --color-cat-transporte-bar: #388bfd;
+    --color-cat-restaurantes-bg: #0d2b1a;
+    --color-cat-restaurantes-text: #56d364;
+    --color-cat-restaurantes-bar: #2ea043;
+    --color-cat-comida-bg: #2b1a0d;
+    --color-cat-comida-text: #ffa657;
+    --color-cat-comida-bar: #d4810a;
+    --color-cat-salud-bg: #2b0d1f;
+    --color-cat-salud-text: #f778ba;
+    --color-cat-salud-bar: #bf4b8a;
+    --color-cat-supermercado-bg: #0d2626;
+    --color-cat-supermercado-text: #39d3bb;
+    --color-cat-supermercado-bar: #1b9e8a;
+    --color-cat-entretenimiento-bg: #1e1433;
+    --color-cat-entretenimiento-text: #c084fc;
+    --color-cat-entretenimiento-bar: #8957e5;
+    --color-cat-suscripciones-bg: #2b2006;
+    --color-cat-suscripciones-text: #f0b429;
+    --color-cat-suscripciones-bar: #bb8009;
+    --color-cat-otros-bg: #1c1c1c;
+    --color-cat-otros-text: #8d96a0;
+    --color-cat-otros-bar: #444c56;
+    --color-cat-compras-bg: #2b0d0d;
+    --color-cat-compras-text: #ff7b72;
+    --color-cat-compras-bar: #b62324;
+  }
 }
 
 body {
