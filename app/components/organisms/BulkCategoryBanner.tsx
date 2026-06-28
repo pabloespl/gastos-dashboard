@@ -46,7 +46,7 @@ export function BulkCategoryBanner({
         <span className="font-semibold">{categoryName}</span> a todas?
       </>
     )
-  } else {
+  } else if (categorizedCount > 0) {
     message = (
       <>
         Hay{' '}
@@ -55,6 +55,14 @@ export function BulkCategoryBanner({
         <span className="font-semibold">&quot;{merchant}&quot;</span>{' '}
         con otra categoría. ¿Aplicar{' '}
         <span className="font-semibold">{categoryName}</span> también a ellas?
+      </>
+    )
+  } else {
+    message = (
+      <>
+        ¿Aplicar <span className="font-semibold">{categoryName}</span> a todas las
+        transacciones de{' '}
+        <span className="font-semibold">&quot;{merchant}&quot;</span>?
       </>
     )
   }

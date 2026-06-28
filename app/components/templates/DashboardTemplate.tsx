@@ -14,11 +14,12 @@ import { SignOutButton } from '@/app/components/sign-out-button'
 const PAGE_SIZE = 20
 
 interface BannerState {
-  merchant:          string
+  messageId:          string
+  merchant:           string
   uncategorizedCount: number
   categorizedCount:   number
-  categoryId:        number
-  categoryName:      string
+  categoryId:         number
+  categoryName:       string
 }
 
 interface DashboardTemplateProps {
@@ -44,8 +45,8 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
   const handleCategoryChange = useCallback(() => {}, [])
 
   const handleBulkPrompt = useCallback(
-    (merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => {
-      setBanner({ merchant, uncategorizedCount, categorizedCount, categoryId, categoryName })
+    (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => {
+      setBanner({ messageId, merchant, uncategorizedCount, categorizedCount, categoryId, categoryName })
     },
     [],
   )
@@ -53,14 +54,16 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
   const handleBulkConfirm = useCallback(() => {
     if (!banner) return
     startBulkTransition(async () => {
-      const txn = transactions.find((t) => t.merchant === banner.merchant)
-      if (!txn) { setBanner(null); return }
-
+      const hasNeither = banner.uncategorizedCount === 0 && banner.categorizedCount === 0
       const body: Record<string, unknown> = { category_id: banner.categoryId }
-      if (banner.uncategorizedCount > 0) body.apply_to_merchant = true
-      if (banner.categorizedCount > 0) body.apply_to_merchant_override = true
+      if (hasNeither) {
+        body.force_all = true
+      } else {
+        if (banner.uncategorizedCount > 0) body.apply_to_merchant = true
+        if (banner.categorizedCount > 0) body.apply_to_merchant_override = true
+      }
 
-      const res = await fetch(`/api/transactions/${txn.message_id}`, {
+      const res = await fetch(`/api/transactions/${banner.messageId}`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(body),
@@ -70,7 +73,7 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
       setBanner(null)
       refetch()
     })
-  }, [banner, transactions, refetch])
+  }, [banner, refetch])
 
   const from = (pagination.page - 1) * PAGE_SIZE + 1
   const to   = Math.min(pagination.page * PAGE_SIZE, pagination.total)

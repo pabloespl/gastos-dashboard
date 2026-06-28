@@ -122,3 +122,18 @@ export async function bulkUpdateCategorizedByMerchant(
 
   if (error) throw new Error(error.message)
 }
+
+export async function bulkOverrideAllByMerchant(
+  merchant: string,
+  excludeMessageId: string,
+  categoryId: number,
+): Promise<void> {
+  const supabase = createAdminClient()
+  const { error } = await supabase
+    .from('transactions')
+    .update({ category_id: categoryId, category_override: true })
+    .eq('merchant', merchant)
+    .neq('message_id', excludeMessageId)
+
+  if (error) throw new Error(error.message)
+}

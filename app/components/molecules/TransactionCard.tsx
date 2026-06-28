@@ -10,7 +10,7 @@ interface TransactionCardProps {
   transaction: TransactionWithCategory
   categories: Category[]
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
-  onBulkPrompt: (merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
+  onBulkPrompt: (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
 }
 

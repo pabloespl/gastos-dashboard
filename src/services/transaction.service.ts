@@ -40,12 +40,18 @@ export async function categorizeTransaction(
   categoryId: number,
   applyToMerchant: boolean,
   applyToMerchantOverride: boolean,
+  forceAll: boolean,
 ): Promise<PatchTransactionResponse> {
   await TransactionModel.updateTransactionCategory(messageId, categoryId)
 
   const merchant = (await TransactionModel.getMerchantByMessageId(messageId)) ?? ''
 
   if (!merchant) return { merchant, uncategorizedSiblings: 0, categorizedSiblings: 0 }
+
+  if (forceAll) {
+    await TransactionModel.bulkOverrideAllByMerchant(merchant, messageId, categoryId)
+    return { merchant, uncategorizedSiblings: 0, categorizedSiblings: 0 }
+  }
 
   if (applyToMerchant) {
     await TransactionModel.bulkUpdateCategoryByMerchant(merchant, categoryId)
