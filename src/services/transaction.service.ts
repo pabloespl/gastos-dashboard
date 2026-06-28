@@ -116,11 +116,14 @@ function computeSummary(
     }
   }
 
-  const topEntry = Object.values(catFreq).sort((a, b) => b.count - a.count)[0] ?? null
-
   const categoryBreakdown: CategoryTotal[] = Object.entries(catTotals)
     .map(([name, total]) => ({ name, total }))
     .sort((a, b) => b.total - a.total)
+
+  const topName  = categoryBreakdown[0]?.name ?? null
+  const topCount = topName
+    ? (Object.values(catFreq).find(e => e.name === topName)?.count ?? 0)
+    : 0
 
   const dailyTotals: DayTotal[] = Object.entries(dayTotals)
     .map(([date, total]) => ({ date, total }))
@@ -130,8 +133,8 @@ function computeSummary(
     clpTotal,
     usdTotal,
     txnCount,
-    topCategory:      topEntry?.name ?? null,
-    topCategoryCount: topEntry?.count ?? 0,
+    topCategory:      topName,
+    topCategoryCount: topCount,
     avgPerDay,
     monthLabel,
     daysElapsed,
