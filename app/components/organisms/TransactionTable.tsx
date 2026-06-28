@@ -1,6 +1,6 @@
 'use client'
 
-import { CategoryBadgeSelect } from '@/app/components/molecules/CategoryBadgeSelect'
+import { CategorySelect } from '@/app/components/molecules/CategorySelect'
 import { formatCLP, formatChileDate } from '@/app/lib/utils'
 import type { TransactionWithCategory } from '@/src/types/transaction'
 import type { Category } from '@/src/types/category'
@@ -47,7 +47,7 @@ export function TransactionTable({
           ) : (
             transactions.map((t) => (
               <tr key={t.message_id} className="hover:bg-bg-secondary transition-colors">
-                <td className="px-6 py-3 text-text-secondary whitespace-nowrap">
+                <td className="px-6 py-3 text-text-secondary whitespace-nowrap" suppressHydrationWarning>
                   {t.datetime ? formatChileDate(t.datetime) : '—'}
                 </td>
                 <td className="px-6 py-3">
@@ -66,7 +66,8 @@ export function TransactionTable({
                     : '—'}
                 </td>
                 <td className="px-6 py-3">
-                  <CategoryBadgeSelect
+                  <CategorySelect
+                    variant="badge"
                     messageId={t.message_id}
                     merchant={t.merchant ?? ''}
                     categoryId={t.category_id}

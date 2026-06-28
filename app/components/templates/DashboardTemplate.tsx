@@ -52,7 +52,7 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
     next,
     prev,
     setPageSize,
-  } = usePagination(filteredTransactions, 20)
+  } = usePagination(filteredTransactions, 10)
 
   const [months, setMonths]                = useState<MonthOption[]>([])
   const [banner, setBanner]                = useState<BannerState | null>(null)
@@ -75,7 +75,7 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
     [filters.month, fetchMonth, setFilters, goTo],
   )
 
-  // No-op: CategoryBadgeSelect/CategorySelect own their display state for immediate
+  // No-op: CategorySelect owns its display state for immediate
   // feedback; the refetch triggered via onSuccess restores accuracy in the parent.
   const handleCategoryChange = useCallback(() => {}, [])
 

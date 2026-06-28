@@ -15,6 +15,7 @@ interface CategorySelectProps {
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
+  variant?: 'badge' | 'control'
 }
 
 export function CategorySelect({
@@ -26,6 +27,7 @@ export function CategorySelect({
   onCategoryChange,
   onBulkPrompt,
   onSuccess,
+  variant = 'control',
 }: CategorySelectProps) {
   const {
     current,
@@ -69,25 +71,38 @@ export function CategorySelect({
 
   return (
     <div className="relative">
-      <button
-        ref={buttonRef}
-        onClick={handleOpen}
-        disabled={pending}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        className={`flex w-full items-center justify-between gap-2 rounded-md border bg-bg-secondary px-3 py-1.5 text-sm transition-colors hover:border-border-strong disabled:opacity-50 ${
-          open ? 'border-primary' : 'border-border'
-        }`}
-      >
-        {currentName
-          ? <CategoryBadge name={currentName} />
-          : <span className="text-text-muted">Sin categoría</span>
-        }
-        <ChevronDown
-          size={14}
-          className={`shrink-0 text-text-muted transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
+      {variant === 'badge' ? (
+        <button
+          ref={buttonRef}
+          onClick={handleOpen}
+          disabled={pending}
+          className="cursor-pointer disabled:opacity-50"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+        >
+          <CategoryBadge name={currentName} />
+        </button>
+      ) : (
+        <button
+          ref={buttonRef}
+          onClick={handleOpen}
+          disabled={pending}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          className={`inline-flex items-center gap-2 rounded-md border bg-bg-secondary px-3 py-1.5 text-sm transition-colors hover:border-border-strong disabled:opacity-50 ${
+            open ? 'border-primary' : 'border-border'
+          }`}
+        >
+          {currentName
+            ? <CategoryBadge name={currentName} />
+            : <span className="text-text-muted">Sin categoría</span>
+          }
+          <ChevronDown
+            size={14}
+            className={`shrink-0 text-text-muted transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+          />
+        </button>
+      )}
       {mounted && createPortal(dropdown, document.body)}
     </div>
   )

@@ -34,6 +34,7 @@ export function DailySparklineCard({ summary }: Props) {
   // Track the sparkline container's real height so bars scale with it
   const chartRef = useRef<HTMLDivElement>(null)
   const [chartH, setChartH] = useState(64)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   useEffect(() => {
     const el = chartRef.current
@@ -56,22 +57,34 @@ export function DailySparklineCard({ summary }: Props) {
         // flex-1 (not h-full) so this wrapper only takes what the card leaves
         // after the title, rather than trying to be 100% of the full card height
         <div className="flex flex-1 flex-col">
-          <div ref={chartRef} className="flex min-h-16 flex-1 w-full gap-0.5">
-            {last25.map(({ date, total }) => {
+          <div ref={chartRef} className="flex min-h-16 flex-1 w-full gap-0.5 overflow-visible">
+            {last25.map(({ date, total }, i) => {
               const heightPct = maxTotal > 0 ? (total / maxTotal) * 100 : 0
               // 0.85 cap so the tallest bar has breathing room at the top
               const barPx     = total > 0 ? Math.max(Math.round((heightPct / 100) * chartH * 0.85), 2) : 0
               const isToday   = date === today
+              const isHovered = hoveredIndex === i
+              const MONTHS    = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'] as const
+              const dateLabel = `${date.slice(8)} ${MONTHS[parseInt(date.slice(5, 7), 10) - 1]}`
               return (
-                <div
-                  key={date}
-                  className="group relative h-full flex-1"
-                  title={`${date.slice(8)}/${date.slice(5, 7)}: ${formatCLP(total)}`}
-                >
+                <div key={date} className="relative h-full flex-1">
                   <div
-                    className={`absolute w-full rounded-sm ${isToday ? 'bg-primary-bar' : 'bg-border group-hover:bg-border-strong'}`}
+                    className={`absolute w-full rounded-sm transition-colors duration-100 ${isToday ? 'bg-primary-bar' : isHovered ? 'bg-border-strong' : 'bg-border'}`}
                     style={{ height: barPx, bottom: 0 }}
-                  />
+                    onMouseEnter={() => setHoveredIndex(i)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                  >
+                    {isHovered && total > 0 && (
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-3 -translate-x-1/2 animate-tooltip-in">
+                        <div className="whitespace-nowrap rounded-xl border border-border bg-bg-card px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.07)]">
+                          <p className="text-xs leading-tight text-text-muted">{dateLabel}</p>
+                          <p className="mt-0.5 text-sm font-semibold leading-tight text-text-primary tabular-nums">{formatCLP(total)}</p>
+                        </div>
+                        {/* Arrow pointing toward the bar */}
+                        <div className="absolute -bottom-[5px] left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border-b border-r border-border bg-bg-card" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               )
             })}

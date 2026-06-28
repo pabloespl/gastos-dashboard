@@ -22,33 +22,42 @@
   --color-primary-bar: #6366f1;
 
   /* Categorías */
-  --color-cat-transporte-bg: #dbeafe;
+
+  --color-cat-transporte-bg: #eff6ff;
   --color-cat-transporte-text: #1d4ed8;
-  --color-cat-transporte-bar: #60a5fa;
-  --color-cat-restaurantes-bg: #dcfce7;
-  --color-cat-restaurantes-text: #15803d;
-  --color-cat-restaurantes-bar: #4ade80;
-  --color-cat-comida-bg: #ffedd5;
+  --color-cat-transporte-bar: #93c5fd;
+
+  --color-cat-restaurantes-bg: #fffbeb;
+  --color-cat-restaurantes-text: #b45309;
+  --color-cat-restaurantes-bar: #fbbf24;
+
+  --color-cat-comida-bg: #fff7ed;
   --color-cat-comida-text: #c2410c;
   --color-cat-comida-bar: #fb923c;
-  --color-cat-salud-bg: #fce7f3;
-  --color-cat-salud-text: #9d174d;
-  --color-cat-salud-bar: #f472b6;
-  --color-cat-supermercado-bg: #ccfbf1;
-  --color-cat-supermercado-text: #0f766e;
-  --color-cat-supermercado-bar: #2dd4bf;
-  --color-cat-entretenimiento-bg: #ede9fe;
-  --color-cat-entretenimiento-text: #6d28d9;
+
+  --color-cat-salud-bg: #fef2f2;
+  --color-cat-salud-text: #b91c1c;
+  --color-cat-salud-bar: #f87171;
+
+  --color-cat-supermercado-bg: #f0fdf4;
+  --color-cat-supermercado-text: #15803d;
+  --color-cat-supermercado-bar: #4ade80;
+
+  --color-cat-entretenimiento-bg: #faf5ff;
+  --color-cat-entretenimiento-text: #7e22ce;
   --color-cat-entretenimiento-bar: #c084fc;
-  --color-cat-suscripciones-bg: #fef3c7;
-  --color-cat-suscripciones-text: #92400e;
-  --color-cat-suscripciones-bar: #fbbf24;
-  --color-cat-otros-bg: #f3f4f6;
-  --color-cat-otros-text: #4b5563;
-  --color-cat-otros-bar: #d1d5db;
-  --color-cat-compras-bg: #fee2e2;
-  --color-cat-compras-text: #b91c1c;
-  --color-cat-compras-bar: #f87171;
+
+  --color-cat-suscripciones-bg: #eef2ff;
+  --color-cat-suscripciones-text: #3730a3;
+  --color-cat-suscripciones-bar: #818cf8;
+
+  --color-cat-compras-bg: #fdf2f8;
+  --color-cat-compras-text: #be185d;
+  --color-cat-compras-bar: #f472b6;
+
+  --color-cat-otros-bg: #f9fafb;
+  --color-cat-otros-text: #374151;
+  --color-cat-otros-bar: #9ca3af;
 }
 
 [data-theme="dark"] {
@@ -70,32 +79,40 @@
   --color-primary-bar: #7b8ec8;
 
   --color-cat-transporte-bg: #112240;
-  --color-cat-transporte-text: #79b8ff;
-  --color-cat-transporte-bar: #388bfd;
-  --color-cat-restaurantes-bg: #0d2b1a;
-  --color-cat-restaurantes-text: #56d364;
-  --color-cat-restaurantes-bar: #2ea043;
+  --color-cat-transporte-text: #93c5fd;
+  --color-cat-transporte-bar: #3b82f6;
+
+  --color-cat-restaurantes-bg: #2b1e06;
+  --color-cat-restaurantes-text: #fde047;
+  --color-cat-restaurantes-bar: #ca8a04;
+
   --color-cat-comida-bg: #2b1a0d;
-  --color-cat-comida-text: #ffa657;
-  --color-cat-comida-bar: #d4810a;
-  --color-cat-salud-bg: #2b0d1f;
-  --color-cat-salud-text: #f778ba;
-  --color-cat-salud-bar: #bf4b8a;
-  --color-cat-supermercado-bg: #0d2626;
-  --color-cat-supermercado-text: #39d3bb;
-  --color-cat-supermercado-bar: #1b9e8a;
+  --color-cat-comida-text: #fda46a;
+  --color-cat-comida-bar: #ea6f1e;
+
+  --color-cat-salud-bg: #2b0d0d;
+  --color-cat-salud-text: #fca5a5;
+  --color-cat-salud-bar: #dc2626;
+
+  --color-cat-supermercado-bg: #0d2b1a;
+  --color-cat-supermercado-text: #56d364;
+  --color-cat-supermercado-bar: #16a34a;
+
   --color-cat-entretenimiento-bg: #1e1433;
-  --color-cat-entretenimiento-text: #c084fc;
-  --color-cat-entretenimiento-bar: #8957e5;
-  --color-cat-suscripciones-bg: #2b2006;
-  --color-cat-suscripciones-text: #f0b429;
-  --color-cat-suscripciones-bar: #bb8009;
+  --color-cat-entretenimiento-text: #d8b4fe;
+  --color-cat-entretenimiento-bar: #9333ea;
+
+  --color-cat-suscripciones-bg: #1a1a40;
+  --color-cat-suscripciones-text: #a5b4fc;
+  --color-cat-suscripciones-bar: #4f46e5;
+
+  --color-cat-compras-bg: #2b0d1a;
+  --color-cat-compras-text: #f9a8d4;
+  --color-cat-compras-bar: #db2777;
+
   --color-cat-otros-bg: #1c1c1c;
-  --color-cat-otros-text: #8d96a0;
-  --color-cat-otros-bar: #444c56;
-  --color-cat-compras-bg: #2b0d0d;
-  --color-cat-compras-text: #ff7b72;
-  --color-cat-compras-bar: #b62324;
+  --color-cat-otros-text: #9ca3af;
+  --color-cat-otros-bar: #4b5563;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -118,43 +135,60 @@
     --color-primary-bar: #7b8ec8;
 
     --color-cat-transporte-bg: #112240;
-    --color-cat-transporte-text: #79b8ff;
-    --color-cat-transporte-bar: #388bfd;
-    --color-cat-restaurantes-bg: #0d2b1a;
-    --color-cat-restaurantes-text: #56d364;
-    --color-cat-restaurantes-bar: #2ea043;
+    --color-cat-transporte-text: #93c5fd;
+    --color-cat-transporte-bar: #3b82f6;
+
+    --color-cat-restaurantes-bg: #2b1e06;
+    --color-cat-restaurantes-text: #fcd34d;
+    --color-cat-restaurantes-bar: #fbbf24;
+
     --color-cat-comida-bg: #2b1a0d;
-    --color-cat-comida-text: #ffa657;
-    --color-cat-comida-bar: #d4810a;
-    --color-cat-salud-bg: #2b0d1f;
-    --color-cat-salud-text: #f778ba;
-    --color-cat-salud-bar: #bf4b8a;
-    --color-cat-supermercado-bg: #0d2626;
-    --color-cat-supermercado-text: #39d3bb;
-    --color-cat-supermercado-bar: #1b9e8a;
+    --color-cat-comida-text: #fda46a;
+    --color-cat-comida-bar: #ea6f1e;
+
+    --color-cat-salud-bg: #2b0d0d;
+    --color-cat-salud-text: #fca5a5;
+    --color-cat-salud-bar: #dc2626;
+
+    --color-cat-supermercado-bg: #0d2b1a;
+    --color-cat-supermercado-text: #56d364;
+    --color-cat-supermercado-bar: #16a34a;
+
     --color-cat-entretenimiento-bg: #1e1433;
-    --color-cat-entretenimiento-text: #c084fc;
-    --color-cat-entretenimiento-bar: #8957e5;
-    --color-cat-suscripciones-bg: #2b2006;
-    --color-cat-suscripciones-text: #f0b429;
-    --color-cat-suscripciones-bar: #bb8009;
+    --color-cat-entretenimiento-text: #d8b4fe;
+    --color-cat-entretenimiento-bar: #9333ea;
+
+    --color-cat-suscripciones-bg: #1a1a40;
+    --color-cat-suscripciones-text: #a5b4fc;
+    --color-cat-suscripciones-bar: #4f46e5;
+
+    --color-cat-compras-bg: #2b0d1a;
+    --color-cat-compras-text: #f9a8d4;
+    --color-cat-compras-bar: #db2777;
+
     --color-cat-otros-bg: #1c1c1c;
-    --color-cat-otros-text: #8d96a0;
-    --color-cat-otros-bar: #444c56;
-    --color-cat-compras-bg: #2b0d0d;
-    --color-cat-compras-text: #ff7b72;
-    --color-cat-compras-bar: #b62324;
+    --color-cat-otros-text: #9ca3af;
+    --color-cat-otros-bar: #4b5563;
   }
 }
 
 body {
   color: var(--color-text-primary);
   background: var(--color-bg-primary);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: inherit;
+}
+
+@keyframes tooltip-in {
+  from { opacity: 0; scale: 0.95; }
+  to   { opacity: 1; scale: 1; }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .animate-tooltip-in {
+    animation: tooltip-in 150ms ease-out forwards;
+    transform-origin: bottom center;
   }
 }

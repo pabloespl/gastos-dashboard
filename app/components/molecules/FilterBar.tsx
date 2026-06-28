@@ -20,12 +20,20 @@ const CURRENCY_OPTIONS: DropdownOption[] = [
   { value: 'USD', label: 'USD' },
 ]
 
-function renderCategoryNode(option: DropdownOption): ReactNode {
-  if (option.value === '') return option.label
-  if (option.value === 'uncategorized') {
-    return <span className="text-text-muted">{option.label}</span>
+function renderCategoryOption(option: DropdownOption): ReactNode {
+  if (option.value === '') {
+    return <span className="inline-block rounded-full px-2 py-0.5 text-sm text-text-primary">{option.label}</span>
   }
-  return <CategoryBadge name={option.label} />
+  if (option.value === 'uncategorized') {
+    return <CategoryBadge name={null} className="text-sm" />
+  }
+  return <CategoryBadge name={option.label} className="text-sm" />
+}
+
+function renderCategoryValue(option: DropdownOption): ReactNode {
+  if (option.value === '') return <span className="text-sm text-text-primary">{option.label}</span>
+  if (option.value === 'uncategorized') return <span className="text-sm text-text-muted">Sin categoría</span>
+  return <CategoryBadge name={option.label} className="text-sm" />
 }
 
 interface FilterBarProps {
@@ -64,6 +72,8 @@ export function FilterBar({ categories, months, filters, onChange, hasActiveFilt
             value={filters.month}
             onChange={month => onChange({ ...filters, month })}
             options={monthOptions}
+            sizingBuffer="pr-[44px]"
+            className="w-full sm:w-fit"
           />
         </div>
 
@@ -73,8 +83,10 @@ export function FilterBar({ categories, months, filters, onChange, hasActiveFilt
             value={filters.category}
             onChange={category => onChange({ ...filters, category })}
             options={categoryOptions}
-            renderOption={renderCategoryNode}
-            renderValue={renderCategoryNode}
+            renderOption={renderCategoryOption}
+            renderValue={renderCategoryValue}
+            sizingBuffer="pr-[56px]"
+            className="w-full sm:w-fit"
           />
         </div>
 
@@ -95,11 +107,13 @@ export function FilterBar({ categories, months, filters, onChange, hasActiveFilt
             value={filters.currency}
             onChange={currency => onChange({ ...filters, currency })}
             options={CURRENCY_OPTIONS}
+            sizingBuffer="pr-0"
+            className="w-full sm:w-fit"
           />
         </div>
 
         {hasActiveFilters && (
-          <div className="flex items-end">
+          <div className="col-span-2 flex items-end">
             <button
               type="button"
               onClick={handleClear}

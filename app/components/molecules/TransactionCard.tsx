@@ -1,8 +1,8 @@
 'use client'
 
-import { Badge } from '@/app/components/atoms/Badge'
+import { CreditCard } from 'lucide-react'
 import { CategorySelect } from '@/app/components/molecules/CategorySelect'
-import { formatCLP, formatChileDate } from '@/app/lib/utils'
+import { formatCLP, formatChileDateShort } from '@/app/lib/utils'
 import type { TransactionWithCategory } from '@/src/types/transaction'
 import type { Category } from '@/src/types/category'
 
@@ -22,34 +22,41 @@ export function TransactionCard({
   onSuccess,
 }: TransactionCardProps) {
   return (
-    <div className="flex items-start justify-between px-4 py-4">
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold text-text-primary">{t.merchant ?? '—'}</p>
-        <div className="mt-1 flex items-center gap-2">
-          <CategorySelect
-            messageId={t.message_id}
-            merchant={t.merchant ?? ''}
-            categoryId={t.category_id}
-            categoryName={t.categories?.name ?? null}
-            categories={categories}
-            onCategoryChange={onCategoryChange}
-            onBulkPrompt={onBulkPrompt}
-            onSuccess={onSuccess}
-          />
-          <span className="text-xs text-text-muted">
-            {t.datetime ? formatChileDate(t.datetime) : '—'}
-          </span>
-        </div>
-      </div>
-      <div className="ml-4 shrink-0 text-right">
-        <p className="font-semibold text-text-primary whitespace-nowrap">
+    <div className="space-y-1.5 px-4 py-3">
+      {/* Fila 1: comercio + monto */}
+      <div className="flex items-center justify-between gap-3">
+        <p className="min-w-0 truncate font-semibold text-text-primary">{t.merchant ?? '—'}</p>
+        <p className="shrink-0 whitespace-nowrap font-semibold text-text-primary">
           {t.amount != null
             ? t.currency === 'CLP'
               ? formatCLP(t.amount)
               : `USD ${t.amount.toFixed(2)}`
             : '—'}
         </p>
-        <Badge label={t.currency ?? '—'} variant={t.currency === 'CLP' ? 'indigo' : 'default'} />
+      </div>
+      {/* Fila 2: categoría + metadato (fecha · tarjeta) */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <CategorySelect
+          variant="badge"
+          messageId={t.message_id}
+          merchant={t.merchant ?? ''}
+          categoryId={t.category_id}
+          categoryName={t.categories?.name ?? null}
+          categories={categories}
+          onCategoryChange={onCategoryChange}
+          onBulkPrompt={onBulkPrompt}
+          onSuccess={onSuccess}
+        />
+        <span className="flex items-center gap-1 text-xs text-text-muted">
+          <span>{t.datetime ? formatChileDateShort(t.datetime) : '—'}</span>
+          {t.card_last4 && (
+            <>
+              <span>·</span>
+              <CreditCard size={12} className="shrink-0" />
+              <span className="font-mono">{t.card_last4}</span>
+            </>
+          )}
+        </span>
       </div>
     </div>
   )

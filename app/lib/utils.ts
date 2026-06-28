@@ -9,6 +9,10 @@ export function formatCLP(n: number): string {
 }
 
 export function formatChileDate(iso: string): string {
+  const hour12 =
+    typeof window !== 'undefined'
+      ? Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions().hour12
+      : undefined
   return new Date(iso).toLocaleString('es-CL', {
     timeZone: TZ,
     day: '2-digit',
@@ -16,7 +20,22 @@ export function formatChileDate(iso: string): string {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    ...(hour12 !== undefined && { hour12 }),
   })
+}
+
+export function formatChileDateShort(iso: string): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ,
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date(iso))
+
+  const get = (type: string) => parts.find(p => p.type === type)?.value ?? '00'
+  return `${get('day')}-${get('month')}, ${get('hour')}:${get('minute')}`
 }
 
 export interface MonthBounds {

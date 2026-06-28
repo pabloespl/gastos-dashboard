@@ -17,6 +17,7 @@ interface DropdownSelectProps {
   className?: string
   renderOption?: (option: DropdownOption) => ReactNode
   renderValue?: (option: DropdownOption) => ReactNode
+  sizingBuffer?: string
 }
 
 export function DropdownSelect({
@@ -24,9 +25,10 @@ export function DropdownSelect({
   onChange,
   options,
   placeholder = 'Seleccionar',
-  className = '',
+  className = 'w-fit',
   renderOption,
   renderValue,
+  sizingBuffer = 'pr-[36px]',
 }: DropdownSelectProps) {
   const [open, setOpen]             = useState(false)
   const [openUpward, setOpenUpward] = useState(false)
@@ -64,10 +66,15 @@ export function DropdownSelect({
   const activeOption = options.find(o => o.value === value)
   const activeLabel  = activeOption?.label ?? placeholder
 
+  const longestLabel = options.reduce(
+    (a, b) => b.label.length > a.label.length ? b : a,
+    { label: placeholder }
+  ).label
+
   const borderCls = open ? 'border-primary' : 'border-border hover:border-border-strong'
 
   const triggerCls = [
-    'flex w-full items-center justify-between gap-2 rounded-md border bg-bg-secondary px-3 py-1.5',
+    'flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-bg-secondary px-3 py-1.5',
     'text-sm text-text-primary transition-colors duration-150 hover:bg-bg-secondary',
     borderCls,
   ].join(' ')
@@ -76,6 +83,10 @@ export function DropdownSelect({
 
   return (
     <div ref={containerRef} className={`relative ${className}`} onKeyDown={handleKeyDown}>
+      {/* Sizes the container to the longest option; collapsed vertically */}
+      <span aria-hidden className={`pointer-events-none invisible block h-0 overflow-hidden whitespace-nowrap px-3 ${sizingBuffer} text-sm`}>
+        {longestLabel}
+      </span>
       <button type="button" onClick={handleToggle} className={triggerCls}>
         <span className="truncate">
           {activeOption && renderValue ? renderValue(activeOption) : activeLabel}

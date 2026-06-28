@@ -1,3 +1,17 @@
+import { Bus, UtensilsCrossed, Bike, Pill, ShoppingCart, Popcorn, RefreshCw, MoreHorizontal, Tag, type LucideIcon } from 'lucide-react'
+
+export const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  'transporte':          Bus,
+  'restaurantes':        UtensilsCrossed,
+  'comida a domicilio':  Bike,
+  'salud':               Pill,
+  'supermercado':        ShoppingCart,
+  'entretenimiento':     Popcorn,
+  'suscripciones':       RefreshCw,
+  'otros':               MoreHorizontal,
+  'compras':             Tag,
+}
+
 export const CATEGORY_BADGE_CLASSES: Record<string, string> = {
   'transporte':          'bg-cat-transporte-bg text-cat-transporte-text',
   'restaurantes':        'bg-cat-restaurantes-bg text-cat-restaurantes-text',
@@ -29,11 +43,14 @@ export function getBadgeClasses(name: string | null): string {
 
 interface CategoryBadgeProps {
   name: string | null
+  className?: string
 }
 
-export function CategoryBadge({ name }: CategoryBadgeProps) {
+export function CategoryBadge({ name, className = 'text-xs' }: CategoryBadgeProps) {
+  const Icon = name ? CATEGORY_ICONS[name.toLowerCase()] : undefined
   return (
-    <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${getBadgeClasses(name)}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${className} ${getBadgeClasses(name)}`}>
+      {Icon && <Icon size={12} className="shrink-0" />}
       {name ?? 'Sin categoría'}
     </span>
   )
