@@ -113,14 +113,14 @@ export function UserMenu({ email, fullName }: UserMenuProps) {
           {/* Sección 3 — navegación */}
           <button
             onClick={() => {}}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-text-secondary hover:text-text-primary hover:bg-bg-hover active:bg-bg-hover-strong transition-colors"
           >
             <Settings className="w-4 h-4" />
             Settings
           </button>
           <button
             onClick={() => {}}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-text-secondary hover:text-text-primary hover:bg-bg-secondary transition-colors"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-text-secondary hover:text-text-primary hover:bg-bg-hover active:bg-bg-hover-strong transition-colors"
           >
             <HelpCircle className="w-4 h-4" />
             Help &amp; support
@@ -131,7 +131,7 @@ export function UserMenu({ email, fullName }: UserMenuProps) {
           {/* Sección 4 — cerrar sesión */}
           <button
             onClick={handleSignOut}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm leading-tight text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 active:bg-red-100 active:text-red-700"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm leading-tight text-red-500 transition-colors hover:bg-red-500/10 active:bg-red-500/15"
           >
             <LogOut className="h-4 w-4" />
             Cerrar sesión

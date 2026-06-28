@@ -14,7 +14,7 @@ const config: Config = {
 
     // Tokens estructurales cuyos nombres coinciden con prefijos de utilidad
     // (bg, text, border) — el scanner puede fallar al hacer el lookup
-    { pattern: /^bg-(bg|primary)(-\w+)?$/ },
+    { pattern: /^bg-(bg|primary)(-\w+)?$/, variants: ['hover', 'active'] },
     { pattern: /^text-(text|primary)(-\w+)?$/, variants: ['hover'] },
     { pattern: /^border-border(-strong)?$/, variants: ['disabled'] },
     { pattern: /^divide-border(-strong)?$/ },
@@ -23,9 +23,11 @@ const config: Config = {
     extend: {
       colors: {
         bg: {
-          primary:   'var(--color-bg-primary)',
-          secondary: 'var(--color-bg-secondary)',
-          card:      'var(--color-bg-card)',
+          primary:       'var(--color-bg-primary)',
+          secondary:     'var(--color-bg-secondary)',
+          card:          'var(--color-bg-card)',
+          hover:         'var(--color-bg-hover)',
+          'hover-strong':'var(--color-bg-hover-strong)',
         },
         text: {
           primary:   'var(--color-text-primary)',
