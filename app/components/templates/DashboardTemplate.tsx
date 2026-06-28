@@ -14,10 +14,11 @@ import { SignOutButton } from '@/app/components/sign-out-button'
 const PAGE_SIZE = 20
 
 interface BannerState {
-  merchant:     string
-  count:        number
-  categoryId:   number
-  categoryName: string
+  merchant:          string
+  uncategorizedCount: number
+  categorizedCount:   number
+  categoryId:        number
+  categoryName:      string
 }
 
 interface DashboardTemplateProps {
@@ -43,8 +44,8 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
   const handleCategoryChange = useCallback(() => {}, [])
 
   const handleBulkPrompt = useCallback(
-    (merchant: string, count: number, categoryId: number, categoryName: string) => {
-      setBanner({ merchant, count, categoryId, categoryName })
+    (merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => {
+      setBanner({ merchant, uncategorizedCount, categorizedCount, categoryId, categoryName })
     },
     [],
   )
@@ -55,10 +56,14 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
       const txn = transactions.find((t) => t.merchant === banner.merchant)
       if (!txn) { setBanner(null); return }
 
+      const body: Record<string, unknown> = { category_id: banner.categoryId }
+      if (banner.uncategorizedCount > 0) body.apply_to_merchant = true
+      if (banner.categorizedCount > 0) body.apply_to_merchant_override = true
+
       const res = await fetch(`/api/transactions/${txn.message_id}`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ category_id: banner.categoryId, apply_to_merchant: true }),
+        body:    JSON.stringify(body),
       })
 
       if (!res.ok) return
@@ -179,7 +184,8 @@ export function DashboardTemplate({ userEmail }: DashboardTemplateProps) {
       {banner && (
         <BulkCategoryBanner
           merchant={banner.merchant}
-          count={banner.count}
+          uncategorizedCount={banner.uncategorizedCount}
+          categorizedCount={banner.categorizedCount}
           categoryName={banner.categoryName}
           onConfirm={handleBulkConfirm}
           onDismiss={() => setBanner(null)}

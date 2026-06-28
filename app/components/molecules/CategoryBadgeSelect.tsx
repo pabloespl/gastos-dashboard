@@ -13,7 +13,7 @@ interface CategoryBadgeSelectProps {
   categoryName: string | null
   categories: Category[]
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
-  onBulkPrompt: (merchant: string, count: number, categoryId: number, categoryName: string) => void
+  onBulkPrompt: (merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
 }
 
@@ -94,8 +94,8 @@ export function CategoryBadgeSelect({
       if (!res.ok) return
       const json = (await res.json()) as PatchTransactionResponse
       onCategoryChange(messageId, cat.id, cat.name)
-      if (json.uncategorizedSiblings > 0) {
-        onBulkPrompt(merchant, json.uncategorizedSiblings, cat.id, cat.name)
+      if (json.uncategorizedSiblings > 0 || json.categorizedSiblings > 0) {
+        onBulkPrompt(merchant, json.uncategorizedSiblings, json.categorizedSiblings, cat.id, cat.name)
       }
       onSuccess?.()
     })

@@ -33,6 +33,10 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Development
+prompt.md
+tsconfig.tsbuildinfo
+
 # Editor
 .vscode/
 .idea/

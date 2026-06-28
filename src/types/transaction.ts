@@ -51,4 +51,5 @@ export interface TransactionsPaginatedResponse {
 export interface PatchTransactionResponse {
   merchant: string
   uncategorizedSiblings: number
+  categorizedSiblings: number
 }

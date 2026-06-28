@@ -85,3 +85,40 @@ export async function bulkUpdateCategoryByMerchant(
 
   if (error) throw new Error(error.message)
 }
+
+export async function countCategorizedByMerchant(
+  merchant: string,
+  excludeMessageId: string,
+  excludeCategoryId: number,
+): Promise<number> {
+  const supabase = createAdminClient()
+  const { count, error } = await supabase
+    .from('transactions')
+    .select('*', { count: 'exact', head: true })
+    .eq('merchant', merchant)
+    .neq('message_id', excludeMessageId)
+    .not('category_id', 'is', null)
+    .neq('category_id', excludeCategoryId)
+    .eq('category_override', false)
+
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}
+
+export async function bulkUpdateCategorizedByMerchant(
+  merchant: string,
+  excludeMessageId: string,
+  categoryId: number,
+): Promise<void> {
+  const supabase = createAdminClient()
+  const { error } = await supabase
+    .from('transactions')
+    .update({ category_id: categoryId, category_override: true })
+    .eq('merchant', merchant)
+    .neq('message_id', excludeMessageId)
+    .not('category_id', 'is', null)
+    .neq('category_id', categoryId)
+    .eq('category_override', false)
+
+  if (error) throw new Error(error.message)
+}

@@ -39,9 +39,10 @@ export async function handlePatchTransaction(
     return NextResponse.json({ error: 'category_id (number) is required' }, { status: 400 })
   }
 
-  const { category_id, apply_to_merchant = false } = body as {
+  const { category_id, apply_to_merchant = false, apply_to_merchant_override = false } = body as {
     category_id: number
     apply_to_merchant?: boolean
+    apply_to_merchant_override?: boolean
   }
 
   try {
@@ -49,6 +50,7 @@ export async function handlePatchTransaction(
       messageId,
       category_id,
       Boolean(apply_to_merchant),
+      Boolean(apply_to_merchant_override),
     )
     return NextResponse.json(result)
   } catch (err) {

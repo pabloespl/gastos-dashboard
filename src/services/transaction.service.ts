@@ -39,21 +39,32 @@ export async function categorizeTransaction(
   messageId: string,
   categoryId: number,
   applyToMerchant: boolean,
+  applyToMerchantOverride: boolean,
 ): Promise<PatchTransactionResponse> {
   await TransactionModel.updateTransactionCategory(messageId, categoryId)
 
   const merchant = (await TransactionModel.getMerchantByMessageId(messageId)) ?? ''
 
-  if (applyToMerchant && merchant) {
+  if (!merchant) return { merchant, uncategorizedSiblings: 0, categorizedSiblings: 0 }
+
+  if (applyToMerchant) {
     await TransactionModel.bulkUpdateCategoryByMerchant(merchant, categoryId)
-    return { merchant, uncategorizedSiblings: 0 }
   }
 
-  const uncategorizedSiblings = merchant
-    ? await TransactionModel.countUncategorizedByMerchant(merchant, messageId)
-    : 0
+  if (applyToMerchantOverride) {
+    await TransactionModel.bulkUpdateCategorizedByMerchant(merchant, messageId, categoryId)
+  }
 
-  return { merchant, uncategorizedSiblings }
+  if (applyToMerchant || applyToMerchantOverride) {
+    return { merchant, uncategorizedSiblings: 0, categorizedSiblings: 0 }
+  }
+
+  const [uncategorizedSiblings, categorizedSiblings] = await Promise.all([
+    TransactionModel.countUncategorizedByMerchant(merchant, messageId),
+    TransactionModel.countCategorizedByMerchant(merchant, messageId, categoryId),
+  ])
+
+  return { merchant, uncategorizedSiblings, categorizedSiblings }
 }
 
 function toDayKey(iso: string): string {

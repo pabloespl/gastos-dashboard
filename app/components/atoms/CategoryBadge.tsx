@@ -7,6 +7,7 @@ export const CATEGORY_BADGE_CLASSES: Record<string, string> = {
   'entretenimiento':     'bg-cat-entretenimiento-bg text-cat-entretenimiento-text',
   'suscripciones':       'bg-cat-suscripciones-bg text-cat-suscripciones-text',
   'otros':               'bg-cat-otros-bg text-cat-otros-text',
+  'compras':             'bg-cat-compras-bg text-cat-compras-text',
 }
 
 export const CATEGORY_BAR_CLASSES: Record<string, string> = {
@@ -18,6 +19,7 @@ export const CATEGORY_BAR_CLASSES: Record<string, string> = {
   'entretenimiento':     'bg-cat-entretenimiento-bar',
   'suscripciones':       'bg-cat-suscripciones-bar',
   'otros':               'bg-cat-otros-bar',
+  'compras':             'bg-cat-compras-bar',
 }
 
 export function getBadgeClasses(name: string | null): string {

@@ -44,6 +44,9 @@
   --color-cat-otros-bg: #f3f4f6;
   --color-cat-otros-text: #4b5563;
   --color-cat-otros-bar: #d1d5db;
+  --color-cat-compras-bg: #fee2e2;
+  --color-cat-compras-text: #b91c1c;
+  --color-cat-compras-bar: #f87171;
 }
 
 [data-theme="dark"] {
