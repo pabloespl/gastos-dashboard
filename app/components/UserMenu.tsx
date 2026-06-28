@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { HelpCircle, LogOut, Moon, Monitor, Settings, Sun, User } from 'lucide-react'
+import { HelpCircle, LogOut, Moon, Monitor, Settings, Sun } from 'lucide-react'
 import { createClient } from '@/app/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '@/app/hooks/useTheme'
