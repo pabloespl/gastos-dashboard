@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@/app/lib/supabase/server'
 import * as TransactionService from '@/src/services/transaction.service'
 
 export async function handleGetTransactions(
@@ -7,7 +8,8 @@ export async function handleGetTransactions(
   const monthParam = new URL(request.url).searchParams.get('month') ?? undefined
 
   try {
-    const result = await TransactionService.getTransactions(monthParam)
+    const supabase = await createServerClient()
+    const result = await TransactionService.getTransactions(supabase, monthParam)
     return NextResponse.json(result)
   } catch (err) {
     console.error('[transactions] GET error:', err)
@@ -46,7 +48,9 @@ export async function handlePatchTransaction(
   }
 
   try {
+    const supabase = await createServerClient()
     const result = await TransactionService.categorizeTransaction(
+      supabase,
       messageId,
       category_id,
       Boolean(apply_to_merchant),

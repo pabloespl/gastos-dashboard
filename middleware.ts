@@ -39,14 +39,24 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const allowedEmail = process.env.NEXT_PUBLIC_ALLOWED_EMAIL
+
+  // Fail-closed: si NEXT_PUBLIC_ALLOWED_EMAIL no está definida (o vacía),
+  // NO dejamos pasar a nadie. Nunca comparar contra undefined/'' silenciosamente.
+  if (!allowedEmail) {
+    console.error(
+      '[middleware] NEXT_PUBLIC_ALLOWED_EMAIL no está definida — bloqueando acceso (fail-closed)'
+    )
+    return NextResponse.redirect(new URL('/login?error=config', request.url))
+  }
+
   // Sin sesión → redirigir a /login
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Email no autorizado → redirigir a /login
-  const allowedEmail = process.env.NEXT_PUBLIC_ALLOWED_EMAIL
-  if (allowedEmail && user.email !== allowedEmail) {
+  // Email no autorizado → cerrar sesión y redirigir a /login
+  if (user.email !== allowedEmail) {
     await supabase.auth.signOut()
     return NextResponse.redirect(new URL('/login?error=unauthorized', request.url))
   }

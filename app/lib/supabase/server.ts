@@ -1,31 +1,35 @@
-import { createServerClient as createSSRServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient as createSSRServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
+/**
+ * Cliente Supabase SSR ligado a las cookies de la request.
+ * Lee la sesión del usuario autenticado, de modo que el JWT viaja a Supabase
+ * y las RLS policies (auth.jwt() ->> 'email') se evalúan con su identidad real.
+ */
 export async function createServerClient() {
   const cookieStore = await cookies()
 
   return createSSRServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
+      getAll() {
+        return cookieStore.getAll()
       },
-      set(name: string, value: string, options: CookieOptions) {
+      setAll(cookiesToSet) {
         try {
-          cookieStore.set({ name, value, ...options })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options),
+          )
         } catch {
-          // RSC context: cookies are read-only. Middleware handles session refresh.
-        }
-      },
-      remove(name: string, options: CookieOptions) {
-        try {
-          cookieStore.set({ name, value: '', ...options })
-        } catch {
-          // RSC context: cookies are read-only. Middleware handles session refresh.
+          // Contexto de Server Component: las cookies son de solo lectura.
+          // El middleware se encarga de refrescar la sesión.
         }
       },
     },
   })
 }
+
+/** Tipo del cliente SSR, para hilarlo por controllers/services/models sin `any`. */
+export type SupabaseServerClient = Awaited<ReturnType<typeof createServerClient>>

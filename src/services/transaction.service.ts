@@ -1,5 +1,6 @@
 import * as TransactionModel from '@/src/models/transaction.model'
 import { getMonthBounds, getMonthBoundsFor } from '@/app/lib/utils'
+import type { SupabaseServerClient } from '@/app/lib/supabase/server'
 import type {
   TransactionWithCategory,
   TransactionSummary,
@@ -9,11 +10,14 @@ import type {
   DayTotal,
 } from '@/src/types/transaction'
 
-export async function getTransactions(month?: string): Promise<TransactionsResponse> {
+export async function getTransactions(
+  supabase: SupabaseServerClient,
+  month?: string,
+): Promise<TransactionsResponse> {
   const { start, end, daysElapsed, daysInMonth, monthLabel } =
     month ? getMonthBoundsFor(month) : getMonthBounds()
 
-  const txns = await TransactionModel.getMonthTransactions(start, end)
+  const txns = await TransactionModel.getMonthTransactions(supabase, start, end)
 
   return {
     data: txns,
@@ -22,29 +26,30 @@ export async function getTransactions(month?: string): Promise<TransactionsRespo
 }
 
 export async function categorizeTransaction(
+  supabase: SupabaseServerClient,
   messageId: string,
   categoryId: number,
   applyToMerchant: boolean,
   applyToMerchantOverride: boolean,
   forceAll: boolean,
 ): Promise<PatchTransactionResponse> {
-  await TransactionModel.updateTransactionCategory(messageId, categoryId)
+  await TransactionModel.updateTransactionCategory(supabase, messageId, categoryId)
 
-  const merchant = (await TransactionModel.getMerchantByMessageId(messageId)) ?? ''
+  const merchant = (await TransactionModel.getMerchantByMessageId(supabase, messageId)) ?? ''
 
   if (!merchant) return { merchant, uncategorizedSiblings: 0, categorizedSiblings: 0 }
 
   if (forceAll) {
-    await TransactionModel.bulkOverrideAllByMerchant(merchant, messageId, categoryId)
+    await TransactionModel.bulkOverrideAllByMerchant(supabase, merchant, messageId, categoryId)
     return { merchant, uncategorizedSiblings: 0, categorizedSiblings: 0 }
   }
 
   if (applyToMerchant) {
-    await TransactionModel.bulkUpdateCategoryByMerchant(merchant, categoryId)
+    await TransactionModel.bulkUpdateCategoryByMerchant(supabase, merchant, categoryId)
   }
 
   if (applyToMerchantOverride) {
-    await TransactionModel.bulkUpdateCategorizedByMerchant(merchant, messageId, categoryId)
+    await TransactionModel.bulkUpdateCategorizedByMerchant(supabase, merchant, messageId, categoryId)
   }
 
   if (applyToMerchant || applyToMerchantOverride) {
@@ -52,8 +57,8 @@ export async function categorizeTransaction(
   }
 
   const [uncategorizedSiblings, categorizedSiblings] = await Promise.all([
-    TransactionModel.countUncategorizedByMerchant(merchant, messageId),
-    TransactionModel.countCategorizedByMerchant(merchant, messageId, categoryId),
+    TransactionModel.countUncategorizedByMerchant(supabase, merchant, messageId),
+    TransactionModel.countCategorizedByMerchant(supabase, merchant, messageId, categoryId),
   ])
 
   return { merchant, uncategorizedSiblings, categorizedSiblings }

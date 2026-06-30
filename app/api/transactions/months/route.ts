@@ -1,4 +1,7 @@
+export const dynamic = 'force-dynamic'
+
 import { NextResponse } from 'next/server'
+import { createServerClient } from '@/app/lib/supabase/server'
 import { getDistinctMonths } from '@/src/models/transaction.model'
 import type { MonthOption } from '@/src/types/transaction'
 
@@ -6,7 +9,8 @@ const TZ = 'America/Santiago'
 
 export async function GET(): Promise<NextResponse> {
   try {
-    const months = await getDistinctMonths()
+    const supabase = await createServerClient()
+    const months = await getDistinctMonths(supabase)
 
     const options: MonthOption[] = months.map(yearMonth => {
       const [yearStr, monthStr] = yearMonth.split('-')

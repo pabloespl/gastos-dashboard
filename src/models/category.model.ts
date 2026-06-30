@@ -1,8 +1,9 @@
-import { createAdminClient } from '@/app/lib/supabase/admin'
+import type { SupabaseServerClient } from '@/app/lib/supabase/server'
 import type { Category } from '@/src/types/category'
 
-export async function getAllCategories(): Promise<Category[]> {
-  const supabase = createAdminClient()
+export async function getAllCategories(
+  supabase: SupabaseServerClient,
+): Promise<Category[]> {
   const { data, error } = await supabase
     .from('categories')
     .select('id, name')

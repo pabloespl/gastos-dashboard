@@ -1,11 +1,11 @@
-import { createAdminClient } from '@/app/lib/supabase/admin'
+import type { SupabaseServerClient } from '@/app/lib/supabase/server'
 import type { TransactionWithCategory } from '@/src/types/transaction'
 
 export async function getMonthTransactions(
+  supabase: SupabaseServerClient,
   startDate: string,
   endDate: string,
 ): Promise<TransactionWithCategory[]> {
-  const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('transactions')
     .select('message_id, datetime, merchant, amount, currency, card_last4, category_id, category_override, categories(name)')
@@ -17,8 +17,9 @@ export async function getMonthTransactions(
   return (data ?? []) as unknown as TransactionWithCategory[]
 }
 
-export async function getDistinctMonths(): Promise<string[]> {
-  const supabase = createAdminClient()
+export async function getDistinctMonths(
+  supabase: SupabaseServerClient,
+): Promise<string[]> {
   const { data, error } = await supabase
     .from('transactions')
     .select('datetime')
@@ -37,10 +38,10 @@ export async function getDistinctMonths(): Promise<string[]> {
 }
 
 export async function getPaginatedTransactions(
+  supabase: SupabaseServerClient,
   from: number,
   to: number,
 ): Promise<{ data: TransactionWithCategory[]; count: number }> {
-  const supabase = createAdminClient()
   const { data, error, count } = await supabase
     .from('transactions')
     .select('message_id, datetime, merchant, amount, currency, card_last4, category_id, category_override, categories(name)', { count: 'exact' })
@@ -52,10 +53,10 @@ export async function getPaginatedTransactions(
 }
 
 export async function updateTransactionCategory(
+  supabase: SupabaseServerClient,
   messageId: string,
   categoryId: number,
 ): Promise<void> {
-  const supabase = createAdminClient()
   const { error } = await supabase
     .from('transactions')
     .update({ category_id: categoryId, category_override: true })
@@ -64,8 +65,10 @@ export async function updateTransactionCategory(
   if (error) throw new Error(error.message)
 }
 
-export async function getMerchantByMessageId(messageId: string): Promise<string | null> {
-  const supabase = createAdminClient()
+export async function getMerchantByMessageId(
+  supabase: SupabaseServerClient,
+  messageId: string,
+): Promise<string | null> {
   const { data, error } = await supabase
     .from('transactions')
     .select('merchant')
@@ -77,10 +80,10 @@ export async function getMerchantByMessageId(messageId: string): Promise<string 
 }
 
 export async function countUncategorizedByMerchant(
+  supabase: SupabaseServerClient,
   merchant: string,
   excludeMessageId: string,
 ): Promise<number> {
-  const supabase = createAdminClient()
   const { count, error } = await supabase
     .from('transactions')
     .select('*', { count: 'exact', head: true })
@@ -93,10 +96,10 @@ export async function countUncategorizedByMerchant(
 }
 
 export async function bulkUpdateCategoryByMerchant(
+  supabase: SupabaseServerClient,
   merchant: string,
   categoryId: number,
 ): Promise<void> {
-  const supabase = createAdminClient()
   const { error } = await supabase
     .from('transactions')
     .update({ category_id: categoryId, category_override: true })
@@ -107,11 +110,11 @@ export async function bulkUpdateCategoryByMerchant(
 }
 
 export async function countCategorizedByMerchant(
+  supabase: SupabaseServerClient,
   merchant: string,
   excludeMessageId: string,
   excludeCategoryId: number,
 ): Promise<number> {
-  const supabase = createAdminClient()
   const { count, error } = await supabase
     .from('transactions')
     .select('*', { count: 'exact', head: true })
@@ -126,11 +129,11 @@ export async function countCategorizedByMerchant(
 }
 
 export async function bulkUpdateCategorizedByMerchant(
+  supabase: SupabaseServerClient,
   merchant: string,
   excludeMessageId: string,
   categoryId: number,
 ): Promise<void> {
-  const supabase = createAdminClient()
   const { error } = await supabase
     .from('transactions')
     .update({ category_id: categoryId, category_override: true })
@@ -144,11 +147,11 @@ export async function bulkUpdateCategorizedByMerchant(
 }
 
 export async function bulkOverrideAllByMerchant(
+  supabase: SupabaseServerClient,
   merchant: string,
   excludeMessageId: string,
   categoryId: number,
 ): Promise<void> {
-  const supabase = createAdminClient()
   const { error } = await supabase
     .from('transactions')
     .update({ category_id: categoryId, category_override: true })
