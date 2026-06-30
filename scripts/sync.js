@@ -67,14 +67,52 @@ function getSupabaseAdmin() {
 
 function rowsToRecords(rows) {
   return rows.map(([messageId, datetime, merchant, amount, currency, cardLast4]) => ({
-    message_id: messageId ?? null,
-    datetime:   datetime   ?? null,
-    merchant:   merchant   ?? null,
-    amount:     amount != null ? parseFloat(amount) : null,
-    currency:   currency   ?? null,
-    card_last4: cardLast4  ?? null,
-    category_id: null,
+    message_id:        messageId ?? null,
+    datetime:          datetime   ?? null,
+    merchant:          merchant   ?? null,
+    amount:            amount != null ? parseFloat(amount) : null,
+    currency:          currency   ?? null,
+    card_last4:        cardLast4  ?? null,
+    category_id:       null,
+    category_override: false,
   }))
+}
+
+async function buildMerchantCategoryMap(supabase, records) {
+  const uncategorized = records.filter(r => r.category_id == null)
+  if (uncategorized.length === 0) return new Map()
+
+  const merchants = [...new Set(uncategorized.map(r => r.merchant).filter(Boolean))]
+  if (merchants.length === 0) return new Map()
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('merchant, category_id, datetime')
+    .in('merchant', merchants)
+    .not('category_id', 'is', null)
+    .order('datetime', { ascending: false })
+
+  if (error) {
+    console.error(`Auto-categorización: error al consultar historial de merchants: ${error.message}`)
+    return new Map()
+  }
+
+  const map = new Map()
+  for (const row of (data ?? [])) {
+    if (!map.has(row.merchant)) {
+      map.set(row.merchant, row.category_id)
+    }
+  }
+  return map
+}
+
+function applyAutoCategorization(records, merchantCategoryMap) {
+  return records.map(r => {
+    if (r.category_id != null) return r  // ya tiene categoría explícita, no tocar
+    const inferred = merchantCategoryMap.get(r.merchant)
+    if (inferred == null) return r       // merchant nuevo, sin historial
+    return { ...r, category_id: inferred, category_override: false }
+  })
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -96,9 +134,19 @@ async function main() {
   const records = rowsToRecords(rows)
   const supabase = getSupabaseAdmin()
 
+  const merchantCategoryMap = await buildMerchantCategoryMap(supabase, records)
+  const categorizedRecords  = applyAutoCategorization(records, merchantCategoryMap)
+
+  const autoCategorized = categorizedRecords.filter((r, i) =>
+    r.category_id != null && records[i].category_id == null
+  ).length
+  if (autoCategorized > 0) {
+    console.log(`Auto-categorizadas por historial de merchant: ${autoCategorized}`)
+  }
+
   const { data, error } = await supabase
     .from('transactions')
-    .upsert(records, { onConflict: 'message_id' })
+    .upsert(categorizedRecords, { onConflict: 'message_id' })
     .select('message_id')
 
   if (error) throw new Error(`Supabase upsert error: ${error.message}`)
