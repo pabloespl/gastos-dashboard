@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react'
 import { CategoryBadge } from '@/app/components/atoms/CategoryBadge'
 import { useCategoryDropdown } from '@/app/hooks/useCategoryDropdown'
 import type { Category } from '@/src/types/category'
+import { sortCategoriesWithOtrosLast } from '@/app/lib/utils'
 
 interface CategorySelectProps {
   messageId: string
@@ -42,6 +43,8 @@ export function CategorySelect({
     handleSelect,
   } = useCategoryDropdown({ categoryId, categoryName, messageId, merchant, onCategoryChange, onBulkPrompt, onSuccess })
 
+  const sortedCategories = sortCategoriesWithOtrosLast(categories)
+
   const dropdown = open && categories.length > 0 && (
     <div
       ref={dropdownRef}
@@ -53,7 +56,7 @@ export function CategorySelect({
       }
       className="fixed z-50 w-48 rounded-xl border border-border bg-bg-card p-1 shadow-lg"
     >
-      {categories.map((cat) => (
+      {sortedCategories.map((cat) => (
         <button
           key={cat.id}
           role="option"

@@ -1,4 +1,12 @@
+import type { Category } from '@/src/types/category'
+
 const TZ = 'America/Santiago'
+
+export function sortCategoriesWithOtrosLast(categories: Category[]): Category[] {
+  const otros  = categories.filter(c => c.name === 'Otros')
+  const rest   = categories.filter(c => c.name !== 'Otros').sort((a, b) => a.name.localeCompare(b.name, 'es'))
+  return [...rest, ...otros]
+}
 
 export function formatCLP(n: number): string {
   return new Intl.NumberFormat('es-CL', {

@@ -7,6 +7,7 @@ import type { DropdownOption } from '@/app/components/atoms/DropdownSelect'
 import { CategoryBadge } from '@/app/components/atoms/CategoryBadge'
 import type { Category } from '@/src/types/category'
 import type { TransactionFilters } from '@/app/hooks/useTransactionFilters'
+import { sortCategoriesWithOtrosLast } from '@/app/lib/utils'
 
 const TZ = 'America/Santiago'
 
@@ -59,7 +60,7 @@ export function FilterBar({ categories, months, filters, onChange, hasActiveFilt
 
   const categoryOptions: DropdownOption[] = [
     { value: '', label: 'Todas' },
-    ...categories.map(c => ({ value: String(c.id), label: c.name })),
+    ...sortCategoriesWithOtrosLast(categories).map(c => ({ value: String(c.id), label: c.name })),
     { value: 'uncategorized', label: 'Sin categoría' },
   ]
 
