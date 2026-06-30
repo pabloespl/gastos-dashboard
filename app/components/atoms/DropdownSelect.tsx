@@ -15,6 +15,7 @@ interface DropdownSelectProps {
   options: DropdownOption[]
   placeholder?: string
   className?: string
+  listClassName?: string
   renderOption?: (option: DropdownOption) => ReactNode
   renderValue?: (option: DropdownOption) => ReactNode
   sizingBuffer?: string
@@ -26,6 +27,7 @@ export function DropdownSelect({
   options,
   placeholder = 'Seleccionar',
   className = 'w-fit',
+  listClassName = '',
   renderOption,
   renderValue,
   sizingBuffer = 'pr-[36px]',
@@ -99,7 +101,7 @@ export function DropdownSelect({
 
       {open && (
         <div className={`absolute left-0 z-50 min-w-max max-w-xs rounded-md border border-border bg-bg-card shadow-lg ${panelPositionCls}`}>
-          <ul className="max-h-60 overflow-y-auto p-1">
+          <ul className={`max-h-60 overflow-y-auto p-1 ${listClassName}`}>
             {options.map(option => (
               <li key={option.value}>
                 <button

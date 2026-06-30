@@ -87,6 +87,7 @@ export function FilterBar({ categories, months, filters, onChange, hasActiveFilt
             renderValue={renderCategoryValue}
             sizingBuffer="pr-[56px]"
             className="w-full sm:w-fit"
+            listClassName="pr-1 overscroll-contain [scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-text-muted"
           />
         </div>
 

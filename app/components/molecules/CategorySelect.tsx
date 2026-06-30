@@ -51,7 +51,7 @@ export function CategorySelect({
           ? { top: dropdownPos.top, left: dropdownPos.left }
           : { bottom: dropdownPos.bottom, left: dropdownPos.left }
       }
-      className="fixed z-50 w-48 rounded-xl border border-border bg-bg-card p-1 pr-1.5 shadow-lg max-h-64 overflow-y-auto overscroll-contain [scrollbar-width:thin] [scrollbar-color:var(--color-border-strong)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border-strong [&::-webkit-scrollbar-thumb:hover]:bg-text-muted"
+      className="fixed z-50 w-48 rounded-xl border border-border bg-bg-card p-1 shadow-lg"
     >
       {categories.map((cat) => (
         <button
