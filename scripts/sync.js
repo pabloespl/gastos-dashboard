@@ -66,13 +66,13 @@ function getSupabaseAdmin() {
 }
 
 function rowsToRecords(rows) {
-  return rows.map(([messageId, datetime, merchant, amount, currency, cardLast4]) => ({
-    message_id:        messageId ?? null,
+  return rows.map(([message_id, datetime, merchant, amount, currency, card_last4]) => ({
+    message_id:        message_id ?? null,
     datetime:          datetime   ?? null,
     merchant:          merchant   ?? null,
     amount:            amount != null ? parseFloat(amount) : null,
     currency:          currency   ?? null,
-    card_last4:        cardLast4  ?? null,
+    card_last4:        card_last4  ?? null,
     category_id:       null,
     category_override: false,
   }))
