@@ -122,7 +122,6 @@ export async function countCategorizedByMerchant(
     .neq('message_id', excludeMessageId)
     .not('category_id', 'is', null)
     .neq('category_id', excludeCategoryId)
-    .eq('category_override', false)
 
   if (error) throw new Error(error.message)
   return count ?? 0
@@ -141,7 +140,6 @@ export async function bulkUpdateCategorizedByMerchant(
     .neq('message_id', excludeMessageId)
     .not('category_id', 'is', null)
     .neq('category_id', categoryId)
-    .eq('category_override', false)
 
   if (error) throw new Error(error.message)
 }

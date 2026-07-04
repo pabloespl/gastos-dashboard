@@ -55,6 +55,10 @@
   --color-cat-compras-text: #be185d;
   --color-cat-compras-bar: #f472b6;
 
+  --color-cat-gastosfijos-bg:   #e0e7ff;
+  --color-cat-gastosfijos-text: #3730a3;
+  --color-cat-gastosfijos-bar:  #6366f1;
+
   --color-cat-otros-bg: #f9fafb;
   --color-cat-otros-text: #374151;
   --color-cat-otros-bar: #9ca3af;
@@ -109,6 +113,10 @@
   --color-cat-compras-bg: #2b0d1a;
   --color-cat-compras-text: #f9a8d4;
   --color-cat-compras-bar: #db2777;
+
+  --color-cat-gastosfijos-bg:   #312e81;
+  --color-cat-gastosfijos-text: #c7d2fe;
+  --color-cat-gastosfijos-bar:  #818cf8;
 
   --color-cat-otros-bg: #1c1c1c;
   --color-cat-otros-text: #9ca3af;
@@ -165,6 +173,10 @@
     --color-cat-compras-bg: #2b0d1a;
     --color-cat-compras-text: #f9a8d4;
     --color-cat-compras-bar: #db2777;
+
+    --color-cat-gastosfijos-bg:   #312e81;
+    --color-cat-gastosfijos-text: #c7d2fe;
+    --color-cat-gastosfijos-bar:  #818cf8;
 
     --color-cat-otros-bg: #1c1c1c;
     --color-cat-otros-text: #9ca3af;

@@ -1,5 +1,8 @@
+'use client'
+
 import { formatCLP } from '@/app/lib/utils'
 import { CATEGORY_BAR_CLASSES } from '@/app/components/atoms/CategoryBadge'
+import { useAmountsVisible } from '@/app/context/AmountsVisibilityContext'
 import type { TransactionSummary } from '@/src/types/transaction'
 
 interface Props {
@@ -7,6 +10,7 @@ interface Props {
 }
 
 export function CategoryBreakdownCard({ summary }: Props) {
+  const { isVisible } = useAmountsVisible()
   const { categoryBreakdown } = summary
   const max = categoryBreakdown[0]?.total ?? 1
 
@@ -25,7 +29,7 @@ export function CategoryBreakdownCard({ summary }: Props) {
               <div key={name}>
                 <div className="mb-1 flex items-center justify-between">
                   <span className="text-xs text-text-primary">{name}</span>
-                  <span className="tabular-nums text-xs text-text-secondary">{formatCLP(total)}</span>
+                  <span className="tabular-nums text-xs text-text-secondary">{isVisible ? formatCLP(total) : '•••••'}</span>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-bg-secondary">
                   <div

@@ -3,6 +3,7 @@
 import { CreditCard } from 'lucide-react'
 import { CategorySelect } from '@/app/components/molecules/CategorySelect'
 import { formatCLP, formatChileDateShort } from '@/app/lib/utils'
+import { useAmountsVisible } from '@/app/context/AmountsVisibilityContext'
 import type { TransactionWithCategory } from '@/src/types/transaction'
 import type { Category } from '@/src/types/category'
 
@@ -21,17 +22,20 @@ export function TransactionCard({
   onBulkPrompt,
   onSuccess,
 }: TransactionCardProps) {
+  const { isVisible } = useAmountsVisible()
   return (
     <div className="space-y-1.5 px-4 py-3">
       {/* Fila 1: comercio + monto */}
       <div className="flex items-center justify-between gap-3">
         <p className="min-w-0 truncate font-semibold text-text-primary">{t.merchant ?? '—'}</p>
         <p className="shrink-0 whitespace-nowrap font-semibold text-text-primary">
-          {t.amount != null
-            ? t.currency === 'CLP'
-              ? formatCLP(t.amount)
-              : `USD ${t.amount.toFixed(2)}`
-            : '—'}
+          {t.amount == null
+            ? '—'
+            : !isVisible
+              ? '•••••'
+              : t.currency === 'CLP'
+                ? formatCLP(t.amount)
+                : `USD ${t.amount.toFixed(2)}`}
         </p>
       </div>
       {/* Fila 2: categoría + metadato (fecha · tarjeta) */}

@@ -2,17 +2,26 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { formatCLP } from '@/app/lib/utils'
+import { useAmountsVisible } from '@/app/context/AmountsVisibilityContext'
 import type { TransactionSummary } from '@/src/types/transaction'
 
 interface Props {
   summary: TransactionSummary
+  monthStart: string // "YYYY-MM" of the month being displayed
 }
 
-export function DailySparklineCard({ summary }: Props) {
+export function DailySparklineCard({ summary, monthStart }: Props) {
+  const { isVisible } = useAmountsVisible()
   const { dailyTotals, clpTotal, daysElapsed, daysInMonth } = summary
+  const formatAmount = (n: number) => (isVisible ? formatCLP(n) : '•••')
+  const [yearStr, monthStr] = monthStart.split('-')
 
   const today = new Intl.DateTimeFormat('sv', { timeZone: 'America/Santiago' }).format(new Date())
-  const [yearStr, monthStr] = today.split('-')
+
+  // Last real day of the displayed month: daysElapsed for the current month
+  // (partial), daysInMonth for past months (complete).
+  const lastDay = String(daysElapsed).padStart(2, '0')
+  const lastDate = `${yearStr}-${monthStr}-${lastDay}`
 
   const totalsMap = new Map(dailyTotals.map((d) => [d.date, d.total]))
   const fullMonth = Array.from({ length: daysInMonth }, (_, i) => {
@@ -21,7 +30,7 @@ export function DailySparklineCard({ summary }: Props) {
     return { date, total: totalsMap.get(date) ?? 0 }
   })
 
-  const last25   = fullMonth.filter((d) => d.date <= today).slice(-25)
+  const last25   = fullMonth.filter((d) => d.date <= lastDate).slice(-daysElapsed)
   const maxTotal = last25.reduce((m, d) => (d.total > m ? d.total : m), 0)
 
   const highDay = dailyTotals.reduce<{ date: string; total: number } | null>(
@@ -78,7 +87,7 @@ export function DailySparklineCard({ summary }: Props) {
                       <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-3 -translate-x-1/2 animate-tooltip-in">
                         <div className="whitespace-nowrap rounded-xl border border-border bg-bg-card px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.07)]">
                           <p className="text-xs leading-tight text-text-muted">{dateLabel}</p>
-                          <p className="mt-0.5 text-sm font-semibold leading-tight text-text-primary tabular-nums">{formatCLP(total)}</p>
+                          <p className="mt-0.5 text-sm font-semibold leading-tight text-text-primary tabular-nums">{formatAmount(total)}</p>
                         </div>
                         {/* Arrow pointing toward the bar */}
                         <div className="absolute -bottom-[5px] left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border-b border-r border-border bg-bg-card" />
@@ -95,7 +104,7 @@ export function DailySparklineCard({ summary }: Props) {
               <p className="text-sm text-text-muted">Día más alto</p>
               {highDay ? (
                 <p className="text-base font-medium text-text-primary">
-                  {formatCLP(highDay.total)}{' '}
+                  {formatAmount(highDay.total)}{' '}
                   <span className="text-sm font-normal text-text-muted">· {highDay.date.slice(8)}</span>
                 </p>
               ) : (
@@ -104,7 +113,7 @@ export function DailySparklineCard({ summary }: Props) {
             </div>
             <div className="text-right">
               <p className="text-sm text-text-muted">Proyección del mes</p>
-              <p className="text-base font-medium text-text-primary tabular-nums">{formatCLP(projection)}</p>
+              <p className="text-base font-medium text-text-primary tabular-nums">{formatAmount(projection)}</p>
             </div>
           </div>
         </div>

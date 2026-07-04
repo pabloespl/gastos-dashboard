@@ -53,6 +53,7 @@ const config: Config = {
           supermercado:   { bg: 'var(--color-cat-supermercado-bg)',   text: 'var(--color-cat-supermercado-text)',   bar: 'var(--color-cat-supermercado-bar)'   },
           entretenimiento:{ bg: 'var(--color-cat-entretenimiento-bg)',text: 'var(--color-cat-entretenimiento-text)',bar: 'var(--color-cat-entretenimiento-bar)' },
           suscripciones:  { bg: 'var(--color-cat-suscripciones-bg)',  text: 'var(--color-cat-suscripciones-text)',  bar: 'var(--color-cat-suscripciones-bar)'  },
+          gastosfijos:    { bg: 'var(--color-cat-gastosfijos-bg)',    text: 'var(--color-cat-gastosfijos-text)',    bar: 'var(--color-cat-gastosfijos-bar)'    },
           otros:          { bg: 'var(--color-cat-otros-bg)',          text: 'var(--color-cat-otros-text)',          bar: 'var(--color-cat-otros-bar)'          },
           compras:        { bg: 'var(--color-cat-compras-bg)',        text: 'var(--color-cat-compras-text)',        bar: 'var(--color-cat-compras-bar)'        },
         },

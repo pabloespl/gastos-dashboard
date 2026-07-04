@@ -2,6 +2,7 @@
 
 import { CategorySelect } from '@/app/components/molecules/CategorySelect'
 import { formatCLP, formatChileDate } from '@/app/lib/utils'
+import { useAmountsVisible } from '@/app/context/AmountsVisibilityContext'
 import type { TransactionWithCategory } from '@/src/types/transaction'
 import type { Category } from '@/src/types/category'
 
@@ -22,6 +23,7 @@ export function TransactionTable({
   onBulkPrompt,
   onSuccess,
 }: TransactionTableProps) {
+  const { isVisible } = useAmountsVisible()
   return (
     <div className="hidden sm:block overflow-x-auto">
       <table className="w-full text-sm">
@@ -59,11 +61,13 @@ export function TransactionTable({
                   </span>
                 </td>
                 <td className="px-6 py-3 text-right tabular-nums text-text-primary whitespace-nowrap">
-                  {t.amount != null
-                    ? t.currency === 'CLP'
-                      ? formatCLP(t.amount)
-                      : `${t.currency} ${t.amount.toFixed(2)}`
-                    : '—'}
+                  {t.amount == null
+                    ? '—'
+                    : !isVisible
+                      ? '•••••'
+                      : t.currency === 'CLP'
+                        ? formatCLP(t.amount)
+                        : `${t.currency} ${t.amount.toFixed(2)}`}
                 </td>
                 <td className="px-6 py-3">
                   <CategorySelect

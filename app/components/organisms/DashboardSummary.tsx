@@ -1,6 +1,9 @@
+'use client'
+
 import { Wallet, Receipt, Tag, TrendingUp } from 'lucide-react'
 import { SummaryCard } from '@/app/components/molecules/SummaryCard'
 import { formatCLP } from '@/app/lib/utils'
+import { useAmountsVisible } from '@/app/context/AmountsVisibilityContext'
 import type { TransactionSummary } from '@/src/types/transaction'
 
 interface DashboardSummaryProps {
@@ -8,6 +11,7 @@ interface DashboardSummaryProps {
 }
 
 export function DashboardSummary({ summary }: DashboardSummaryProps) {
+  const { isVisible } = useAmountsVisible()
   const {
     clpTotal,
     usdTotal,
@@ -22,8 +26,8 @@ export function DashboardSummary({ summary }: DashboardSummaryProps) {
   const cards = [
     {
       label: 'Total del mes',
-      value: txnCount === 0 ? '—' : formatCLP(clpTotal),
-      sub:   usdTotal > 0 ? `+ USD ${usdTotal.toFixed(2)} por separado` : monthLabel,
+      value: txnCount === 0 ? '—' : isVisible ? formatCLP(clpTotal) : '•••••',
+      sub:   usdTotal > 0 ? `+ USD ${isVisible ? usdTotal.toFixed(2) : '•••••'} por separado` : monthLabel,
       icon:  <Wallet size={20} />,
     },
     {
@@ -40,7 +44,7 @@ export function DashboardSummary({ summary }: DashboardSummaryProps) {
     },
     {
       label: 'Promedio por día',
-      value: txnCount === 0 ? '—' : formatCLP(avgPerDay),
+      value: txnCount === 0 ? '—' : isVisible ? formatCLP(avgPerDay) : '•••••',
       sub:   `${daysElapsed} días transcurridos`,
       icon:  <TrendingUp size={20} />,
     },

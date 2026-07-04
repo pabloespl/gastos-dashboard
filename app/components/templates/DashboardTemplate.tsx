@@ -12,6 +12,7 @@ import { BulkCategoryBanner } from '@/app/components/organisms/BulkCategoryBanne
 import { CategoryBreakdownCard } from '@/app/components/organisms/CategoryBreakdownCard'
 import { DailySparklineCard } from '@/app/components/organisms/DailySparklineCard'
 import { UserMenu } from '@/app/components/UserMenu'
+import { ToggleAmountsButton } from '@/app/components/atoms/ToggleAmountsButton'
 import { FilterBar } from '@/app/components/molecules/FilterBar'
 import { PaginationBar } from '@/app/components/molecules/PaginationBar'
 import type { MonthOption } from '@/src/types/transaction'
@@ -81,6 +82,7 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
 
   const handleBulkPrompt = useCallback(
     (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => {
+      if (uncategorizedCount + categorizedCount === 0) return
       setBanner({ messageId, merchant, uncategorizedCount, categorizedCount, categoryId, categoryName })
     },
     [],
@@ -121,6 +123,7 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
             <span className="text-sm font-semibold text-text-primary">Gastos Dashboard</span>
           </div>
           <div className="flex items-center gap-3">
+            <ToggleAmountsButton />
             <UserMenu email={userEmail ?? ''} fullName={fullName} />
           </div>
         </div>
@@ -145,7 +148,7 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
             }`}
           >
             <CategoryBreakdownCard summary={summary} />
-            <DailySparklineCard summary={summary} />
+            <DailySparklineCard summary={summary} monthStart={filters.month} />
           </div>
         )}
 
