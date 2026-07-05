@@ -5,7 +5,7 @@ const { getSheetClient, fetchNewRows } = require('./lib/google-sheets')
 const { getSupabaseAdmin } = require('./lib/supabase')
 const { readLastSync, writeLastSync } = require('./lib/sync-cursor')
 
-const SHEET_NAME = 'Transferencias'
+const SHEET_NAME = 'Transfers'
 const LAST_SYNC_PATH = path.resolve(__dirname, '../last_sync_transfers.txt')
 const TABLE_NAME = 'transfers'
 const LAST_COLUMN = 'J'
