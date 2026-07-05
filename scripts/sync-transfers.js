@@ -1,13 +1,13 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.local') })
 
 const path = require('path')
-const { getSheetClient, fetchNewRows } = require('./lib/googleSheets')
+const { getSheetClient, fetchNewRows } = require('./lib/google-sheets')
 const { getSupabaseAdmin } = require('./lib/supabase')
-const { readLastSync, writeLastSync } = require('./lib/syncCursor')
+const { readLastSync, writeLastSync } = require('./lib/sync-cursor')
 
-const SHEET_NAME = 'Transfers'
+const SHEET_NAME = 'Transferencias'
 const LAST_SYNC_PATH = path.resolve(__dirname, '../last_sync_transfers.txt')
-const TABLE_NAME = 'bank_transfers'
+const TABLE_NAME = 'transfers'
 const LAST_COLUMN = 'J'
 // message_id, datetime, recipient_name, recipient_rut, recipient_bank,
 // recipient_account, amount, memo, source_account, transaction_id
