@@ -43,3 +43,6 @@ tsconfig.tsbuildinfo
 
 # Supabase
 supabase/.temp
+
+# Claude Code skills (managed via skills-lock.json)
+.agents/skills/
