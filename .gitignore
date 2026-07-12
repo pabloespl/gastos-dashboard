@@ -46,3 +46,6 @@ supabase/.temp
 
 # Claude Code skills (managed via skills-lock.json)
 .agents/skills/
+
+# Playwright MCP debug output (console logs, page snapshots)
+.playwright-mcp/
