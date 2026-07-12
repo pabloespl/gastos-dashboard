@@ -10,6 +10,7 @@ interface TransactionListProps {
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
+  onExclude: (messageId: string) => void
 }
 
 export function TransactionList({
@@ -18,6 +19,7 @@ export function TransactionList({
   onCategoryChange,
   onBulkPrompt,
   onSuccess,
+  onExclude,
 }: TransactionListProps) {
   if (transactions.length === 0) {
     return (
@@ -37,6 +39,7 @@ export function TransactionList({
           onCategoryChange={onCategoryChange}
           onBulkPrompt={onBulkPrompt}
           onSuccess={onSuccess}
+          onExclude={onExclude}
         />
       ))}
     </div>

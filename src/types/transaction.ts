@@ -7,6 +7,7 @@ export interface Transaction {
   card_last4: string
   category_id: number | null
   category_override: boolean
+  excluded: boolean
 }
 
 export interface TransactionWithCategory extends Transaction {

@@ -63,3 +63,20 @@ export async function handlePatchTransaction(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export async function handleExcludeTransaction(
+  messageId: string,
+): Promise<NextResponse> {
+  if (!messageId) {
+    return NextResponse.json({ error: 'message_id is required' }, { status: 400 })
+  }
+
+  try {
+    const supabase = await createServerClient()
+    const result = await TransactionService.excludeTransaction(supabase, messageId)
+    return NextResponse.json(result)
+  } catch (err) {
+    console.error('[transactions] DELETE error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

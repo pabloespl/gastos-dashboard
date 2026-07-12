@@ -80,6 +80,15 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
   // feedback; the refetch triggered via onSuccess restores accuracy in the parent.
   const handleCategoryChange = useCallback(() => {}, [])
 
+  const handleExclude = useCallback(
+    async (messageId: string) => {
+      const res = await fetch(`/api/transactions/${messageId}`, { method: 'DELETE' })
+      if (!res.ok) return
+      refetch()
+    },
+    [refetch],
+  )
+
   const handleBulkPrompt = useCallback(
     (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => {
       if (uncategorizedCount + categorizedCount === 0) return
@@ -184,6 +193,7 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
                 onCategoryChange={handleCategoryChange}
                 onBulkPrompt={handleBulkPrompt}
                 onSuccess={refetch}
+                onExclude={handleExclude}
               />
               <TransactionTable
                 transactions={paginatedItems}
@@ -191,6 +201,7 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
                 onCategoryChange={handleCategoryChange}
                 onBulkPrompt={handleBulkPrompt}
                 onSuccess={refetch}
+                onExclude={handleExclude}
               />
             </>
           )}

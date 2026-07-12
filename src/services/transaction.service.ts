@@ -64,6 +64,14 @@ export async function categorizeTransaction(
   return { merchant, uncategorizedSiblings, categorizedSiblings }
 }
 
+export async function excludeTransaction(
+  supabase: SupabaseServerClient,
+  messageId: string,
+): Promise<{ message_id: string; excluded: boolean }> {
+  await TransactionModel.setTransactionExcluded(supabase, messageId, true)
+  return { message_id: messageId, excluded: true }
+}
+
 function toDayKey(iso: string): string {
   return new Intl.DateTimeFormat('sv', { timeZone: 'America/Santiago' }).format(new Date(iso))
 }

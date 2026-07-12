@@ -1,12 +1,13 @@
 'use client'
 
+import { Trash2 } from 'lucide-react'
 import { CategorySelect } from '@/app/components/molecules/CategorySelect'
 import { formatCLP, formatChileDate } from '@/app/lib/utils'
 import { useAmountsVisible } from '@/app/context/AmountsVisibilityContext'
 import type { TransactionWithCategory } from '@/src/types/transaction'
 import type { Category } from '@/src/types/category'
 
-const TABLE_COLUMNS = ['Fecha', 'Comercio', 'Monto', 'Categoría', 'Tarjeta']
+const TABLE_COLUMNS = ['Fecha', 'Comercio', 'Monto', 'Categoría', 'Tarjeta', '']
 
 interface TransactionTableProps {
   transactions: TransactionWithCategory[]
@@ -14,6 +15,7 @@ interface TransactionTableProps {
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
+  onExclude: (messageId: string) => void
 }
 
 export function TransactionTable({
@@ -22,6 +24,7 @@ export function TransactionTable({
   onCategoryChange,
   onBulkPrompt,
   onSuccess,
+  onExclude,
 }: TransactionTableProps) {
   const { isVisible } = useAmountsVisible()
   return (
@@ -84,6 +87,21 @@ export function TransactionTable({
                 </td>
                 <td className="px-6 py-3 text-text-secondary font-mono text-xs">
                   {t.card_last4 ? `···· ${t.card_last4}` : '—'}
+                </td>
+                <td className="px-6 py-3">
+                  <button
+                    type="button"
+                    aria-label="Excluir transacción"
+                    title="Excluir transacción"
+                    onClick={() => {
+                      if (window.confirm('¿Excluir esta transacción del dashboard?')) {
+                        onExclude(t.message_id)
+                      }
+                    }}
+                    className="rounded-md p-1.5 text-text-muted transition-colors hover:bg-red-500/10 hover:text-red-500"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </td>
               </tr>
             ))

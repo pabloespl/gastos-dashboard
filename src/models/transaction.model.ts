@@ -9,6 +9,7 @@ export async function getMonthTransactions(
   const { data, error } = await supabase
     .from('transactions')
     .select('message_id, datetime, merchant, amount, currency, card_last4, category_id, category_override, categories(name)')
+    .eq('excluded', false)
     .gte('datetime', startDate)
     .lt('datetime', endDate)
     .order('datetime', { ascending: false })
@@ -45,6 +46,7 @@ export async function getPaginatedTransactions(
   const { data, error, count } = await supabase
     .from('transactions')
     .select('message_id, datetime, merchant, amount, currency, card_last4, category_id, category_override, categories(name)', { count: 'exact' })
+    .eq('excluded', false)
     .order('datetime', { ascending: false })
     .range(from, to)
 
@@ -60,6 +62,19 @@ export async function updateTransactionCategory(
   const { error } = await supabase
     .from('transactions')
     .update({ category_id: categoryId, category_override: true })
+    .eq('message_id', messageId)
+
+  if (error) throw new Error(error.message)
+}
+
+export async function setTransactionExcluded(
+  supabase: SupabaseServerClient,
+  messageId: string,
+  excluded: boolean,
+): Promise<void> {
+  const { error } = await supabase
+    .from('transactions')
+    .update({ excluded })
     .eq('message_id', messageId)
 
   if (error) throw new Error(error.message)

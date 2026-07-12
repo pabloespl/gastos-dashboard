@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server'
-import { handlePatchTransaction } from '@/src/controllers/transaction.controller'
+import { handlePatchTransaction, handleExcludeTransaction } from '@/src/controllers/transaction.controller'
 
 export async function PATCH(
   request: NextRequest,
@@ -7,4 +7,12 @@ export async function PATCH(
 ) {
   const { message_id } = await params
   return handlePatchTransaction(request, message_id)
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ message_id: string }> },
+) {
+  const { message_id } = await params
+  return handleExcludeTransaction(message_id)
 }

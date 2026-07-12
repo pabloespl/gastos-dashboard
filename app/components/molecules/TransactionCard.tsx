@@ -1,6 +1,6 @@
 'use client'
 
-import { CreditCard } from 'lucide-react'
+import { CreditCard, Trash2 } from 'lucide-react'
 import { CategorySelect } from '@/app/components/molecules/CategorySelect'
 import { formatCLP, formatChileDateShort } from '@/app/lib/utils'
 import { useAmountsVisible } from '@/app/context/AmountsVisibilityContext'
@@ -13,6 +13,7 @@ interface TransactionCardProps {
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
+  onExclude: (messageId: string) => void
 }
 
 export function TransactionCard({
@@ -21,6 +22,7 @@ export function TransactionCard({
   onCategoryChange,
   onBulkPrompt,
   onSuccess,
+  onExclude,
 }: TransactionCardProps) {
   const { isVisible } = useAmountsVisible()
   return (
@@ -38,7 +40,7 @@ export function TransactionCard({
                 : `USD ${t.amount.toFixed(2)}`}
         </p>
       </div>
-      {/* Fila 2: categoría + metadato (fecha · tarjeta) */}
+      {/* Fila 2: categoría + metadato (fecha · tarjeta) + excluir */}
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <CategorySelect
           variant="badge"
@@ -51,16 +53,31 @@ export function TransactionCard({
           onBulkPrompt={onBulkPrompt}
           onSuccess={onSuccess}
         />
-        <span className="flex items-center gap-1 text-xs text-text-muted">
-          <span>{t.datetime ? formatChileDateShort(t.datetime) : '—'}</span>
-          {t.card_last4 && (
-            <>
-              <span>·</span>
-              <CreditCard size={12} className="shrink-0" />
-              <span className="font-mono">{t.card_last4}</span>
-            </>
-          )}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1 text-xs text-text-muted">
+            <span>{t.datetime ? formatChileDateShort(t.datetime) : '—'}</span>
+            {t.card_last4 && (
+              <>
+                <span>·</span>
+                <CreditCard size={12} className="shrink-0" />
+                <span className="font-mono">{t.card_last4}</span>
+              </>
+            )}
+          </span>
+          <button
+            type="button"
+            aria-label="Excluir transacción"
+            title="Excluir transacción"
+            onClick={() => {
+              if (window.confirm('¿Excluir esta transacción del dashboard?')) {
+                onExclude(t.message_id)
+              }
+            }}
+            className="rounded-md p-1 text-text-muted transition-colors hover:bg-red-500/10 hover:text-red-500"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
     </div>
   )
