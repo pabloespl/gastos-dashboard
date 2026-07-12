@@ -57,6 +57,16 @@ When adding a new API feature, follow this same chain — don't put Supabase que
 - All date/timezone logic assumes `America/Santiago` and is centralized in `app/lib/utils.ts` (`getMonthBounds`, `getMonthBoundsFor`, `formatChileDate*`). Use these helpers instead of ad hoc `Date` math — month boundaries in particular need the explicit `Intl.DateTimeFormat` dance to avoid UTC drift.
 - Currency formatting (`formatCLP`) assumes CLP; transactions can also be `USD` (see `TransactionSummary.usdTotal` in `src/services/transaction.service.ts`) and are summed separately, not converted.
 
+### Bank transfers (separate view, own vertical slice)
+
+Bank transfers (rent, paying someone back, etc.) are a distinct concept from card transactions and live in their own `transfers` table, vertical slice (`src/types/transfer.ts` → `src/models/transfer.model.ts` → `src/services/transfer.service.ts` → `src/controllers/transfer.controller.ts` → `app/api/transfers/**`), and page (`app/transferencias/page.tsx` → `TransfersTemplate`). Transfers can optionally be assigned a `category_id` (same `categories` table transactions use, via the reused `CategorySelect` component) purely for the user's own reference/filtering — categorized or not, transfers **never** feed into `TransactionSummary`/expense totals/category breakdown, which stay computed from `transactions` only. There's no bulk-apply-by-merchant or exclude/soft-delete for transfers (no repeating "merchant" concept, no false-positive-charge problem to solve) — `PATCH /api/transfers/[message_id]` only ever updates the one row.
+
+`app/hooks/useCategoryDropdown.ts` takes an `endpoint` prop (defaults to `/api/transactions`) precisely so `CategorySelect` can be reused as-is for transfers by passing `endpoint="/api/transfers"` — don't hardcode the transactions URL back into it if you touch that hook.
+
+### Navigation (sidebar)
+
+`app/components/organisms/Sidebar.tsx` exports `NavToggle`, a hamburger button rendered inside the header at every breakpoint that opens the same slide-in drawer (with `Dashboard`/`Transferencias` links) on both mobile and desktop — there's no persistent desktop rail, since a fixed-width rail pushed the `mx-auto max-w-6xl` main content off-center relative to the full viewport. Both `DashboardTemplate` and `TransfersTemplate` render `<NavToggle />` inside their header — this is the only place page-level navigation lives; there's no tab bar or router-level layout wrapping both pages, since `app/layout.tsx` is shared with `/login` and must not render app chrome.
+
 ### Categorization rules (bulk update semantics)
 
 `PATCH /api/transactions/[message_id]` (`src/controllers/transaction.controller.ts` → `TransactionService.categorizeTransaction`) has several mutually exclusive flags that change blast radius when a category is assigned:
@@ -67,6 +77,10 @@ When adding a new API feature, follow this same chain — don't put Supabase que
 - `force_all`: overrides every transaction from that merchant unconditionally.
 
 When touching this logic, preserve the precedence order in `categorizeTransaction` (`force_all` short-circuits before the other two are checked).
+
+### Excluding a transaction (soft delete)
+
+`DELETE /api/transactions/[message_id]` (`handleExcludeTransaction` → `TransactionService.excludeTransaction`) sets `excluded = true` on that row rather than deleting it — for charges that were cancelled/refunded after syncing (e.g. a cancelled Uber ride) but shouldn't count toward totals. The row stays in Supabase; every read path that feeds the dashboard (`getMonthTransactions`, `getPaginatedTransactions` in `src/models/transaction.model.ts`) filters `.eq('excluded', false)`, so excluded transactions disappear from the list, summary, and category/day breakdowns with no separate handling needed elsewhere. `scripts/sync-transactions.js`'s upsert payload never includes the `excluded` column, so a later re-sync can't silently un-exclude a row. There's no restore UI — undoing requires flipping the flag back via Supabase directly (SQL editor or MCP `execute_sql`).
 
 ## Supabase MCP
 

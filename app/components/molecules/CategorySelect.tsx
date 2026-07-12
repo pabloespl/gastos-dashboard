@@ -17,6 +17,7 @@ interface CategorySelectProps {
   onBulkPrompt: (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
   variant?: 'badge' | 'control'
+  endpoint?: string
 }
 
 export function CategorySelect({
@@ -29,6 +30,7 @@ export function CategorySelect({
   onBulkPrompt,
   onSuccess,
   variant = 'control',
+  endpoint,
 }: CategorySelectProps) {
   const {
     current,
@@ -41,7 +43,7 @@ export function CategorySelect({
     dropdownRef,
     handleOpen,
     handleSelect,
-  } = useCategoryDropdown({ categoryId, categoryName, messageId, merchant, onCategoryChange, onBulkPrompt, onSuccess })
+  } = useCategoryDropdown({ categoryId, categoryName, messageId, merchant, onCategoryChange, onBulkPrompt, onSuccess, endpoint })
 
   const sortedCategories = sortCategoriesWithOtrosLast(categories)
 

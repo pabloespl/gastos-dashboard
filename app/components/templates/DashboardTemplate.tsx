@@ -5,6 +5,7 @@ import { useTransactions } from '@/app/hooks/useTransactions'
 import { useTransactionFilters } from '@/app/hooks/useTransactionFilters'
 import type { TransactionFilters } from '@/app/hooks/useTransactionFilters'
 import { usePagination } from '@/app/hooks/usePagination'
+import { NavToggle } from '@/app/components/organisms/Sidebar'
 import { DashboardSummary } from '@/app/components/organisms/DashboardSummary'
 import { TransactionTable } from '@/app/components/organisms/TransactionTable'
 import { TransactionList } from '@/app/components/organisms/TransactionList'
@@ -124,12 +125,13 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
   return (
     <div className="min-h-screen bg-bg-secondary">
       <header className="border-b border-border-strong bg-bg-card">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-base sm:h-9 sm:w-9 sm:text-lg">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <NavToggle />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-base">
               💸
             </div>
-            <span className="text-sm font-semibold text-text-primary">Gastos Dashboard</span>
+            <span className="truncate text-sm font-semibold text-text-primary">Gastos Dashboard</span>
           </div>
           <div className="flex items-center gap-3">
             <ToggleAmountsButton />

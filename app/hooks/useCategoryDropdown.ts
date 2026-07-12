@@ -20,6 +20,7 @@ interface UseCategoryDropdownProps {
   onCategoryChange: (messageId: string, categoryId: number, categoryName: string) => void
   onBulkPrompt: (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
+  endpoint?: string
 }
 
 export interface UseCategoryDropdownReturn {
@@ -43,6 +44,7 @@ export function useCategoryDropdown({
   onCategoryChange,
   onBulkPrompt,
   onSuccess,
+  endpoint = '/api/transactions',
 }: UseCategoryDropdownProps): UseCategoryDropdownReturn {
   const [current, setCurrent]         = useState<number | null>(categoryId)
   const [currentName, setCurrentName] = useState<string | null>(categoryName)
@@ -98,15 +100,15 @@ export function useCategoryDropdown({
     setOpen(false)
 
     startTransition(async () => {
-      const res = await fetch(`/api/transactions/${messageId}`, {
+      const res = await fetch(`${endpoint}/${messageId}`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ category_id: cat.id }),
       })
       if (!res.ok) return
-      const json = (await res.json()) as PatchTransactionResponse
+      const json = (await res.json()) as Partial<PatchTransactionResponse>
       onCategoryChange(messageId, cat.id, cat.name)
-      onBulkPrompt(messageId, merchant, json.uncategorizedSiblings, json.categorizedSiblings, cat.id, cat.name)
+      onBulkPrompt(messageId, merchant, json.uncategorizedSiblings ?? 0, json.categorizedSiblings ?? 0, cat.id, cat.name)
       onSuccess?.()
     })
   }
