@@ -68,6 +68,10 @@ When adding a new API feature, follow this same chain — don't put Supabase que
 
 When touching this logic, preserve the precedence order in `categorizeTransaction` (`force_all` short-circuits before the other two are checked).
 
+## Supabase MCP
+
+A Supabase MCP server is configured in `.mcp.json` (project ref `hwfxyltobyctzreyhxvt`). Prefer its tools over writing ad hoc scripts when inspecting/debugging the live database: `list_tables` to check schema before changes, `get_advisors` after DDL changes (catches missing RLS policies), `get_logs` when debugging runtime issues, `execute_sql` for one-off queries. It requires authorization via `/mcp` in an interactive session before use — it's not available in headless/non-interactive runs.
+
 ## Path aliases
 
 `@/*` maps to the repo root (`tsconfig.json`), so imports look like `@/app/lib/utils` and `@/src/services/transaction.service` regardless of which directory the importing file lives in.
