@@ -66,7 +66,7 @@ export function useTransactions(): UseTransactionsReturn {
     transactions: query.data?.data ?? [],
     categories:   categoriesQuery.data ?? [],
     summary:      query.data?.summary ?? null,
-    loading:      query.isLoading,
+    loading:      query.isLoading || query.isFetching,
     error:        query.isError ? 'Error al cargar transacciones' : null,
     refetch,
     fetchMonth,
