@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Inter } from 'next/font/google'
 import "./globals.css";
 import { AmountsVisibilityProvider } from "./context/AmountsVisibilityContext";
+import { QueryProvider } from "./providers/QueryProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,7 +32,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.className} antialiased`}
       >
-        <AmountsVisibilityProvider>{children}</AmountsVisibilityProvider>
+        <QueryProvider>
+          <AmountsVisibilityProvider>{children}</AmountsVisibilityProvider>
+        </QueryProvider>
       </body>
     </html>
   );
