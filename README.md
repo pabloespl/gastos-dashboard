@@ -1,2 +1,0 @@
-# gastos-dashboard
-## hola mundo
