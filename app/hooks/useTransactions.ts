@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCategories } from '@/app/hooks/useCategories'
 import type {
   TransactionWithCategory,
   TransactionSummary,
@@ -18,61 +20,55 @@ interface UseTransactionsReturn {
   fetchMonth:   (month: string) => void
 }
 
+async function fetchTransactions(month?: string): Promise<TransactionsResponse> {
+  const url = month ? `/api/transactions?month=${encodeURIComponent(month)}` : '/api/transactions'
+  const res = await fetch(url)
+  if (!res.ok) throw new Error('Error al cargar transacciones')
+  return res.json() as Promise<TransactionsResponse>
+}
+
 export function useTransactions(): UseTransactionsReturn {
-  const [transactions, setTransactions] = useState<TransactionWithCategory[]>([])
-  const [categories, setCategories]     = useState<Category[]>([])
-  const [summary, setSummary]           = useState<TransactionSummary | null>(null)
-  const [loading, setLoading]           = useState(true)
-  const [error, setError]               = useState<string | null>(null)
+  const [month, setMonth] = useState<string | undefined>(undefined)
+  const queryClient = useQueryClient()
 
-  const currentMonthRef = useRef<string | undefined>(undefined)
+  const query = useQuery({
+    queryKey: ['transactions', month ?? 'current'],
+    queryFn: () => fetchTransactions(month),
+  })
 
-  const fetchData = useCallback(async (month?: string) => {
-    currentMonthRef.current = month
-    setLoading(true)
-    setError(null)
-    try {
-      const url = month ? `/api/transactions?month=${encodeURIComponent(month)}` : '/api/transactions'
-      const res = await fetch(url)
-      if (!res.ok) { setError('Error al cargar transacciones'); return }
-      const json = (await res.json()) as TransactionsResponse
-      setTransactions(json.data)
-      setSummary(json.summary)
-    } catch {
-      setError('Error de red')
-    } finally {
-      setLoading(false)
-    }
+  const categoriesQuery = useCategories()
+
+  const fetchMonth = useCallback((m: string) => {
+    setMonth(m)
   }, [])
 
-  const fetchMonth = useCallback((month: string) => {
-    void fetchData(month)
-  }, [fetchData])
-
   // REALTIME: This is the swap point for a Supabase Realtime subscription.
-  // When ready, replace the refetch() call with a channel that auto-drives updates:
+  // When ready, subscribe once (e.g. in a top-level effect) and drive updates
+  // via the query cache instead of a manual refetch call:
   //
   //   useEffect(() => {
   //     const channel = supabase
   //       .channel('transactions-changes')
   //       .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' },
-  //           () => void fetchData(currentMonthRef.current))
+  //           () => queryClient.invalidateQueries({ queryKey: ['transactions'] }))
   //       .subscribe()
   //     return () => { void supabase.removeChannel(channel) }
-  //   }, [fetchData])
+  //   }, [queryClient])
   //
-  // Once the subscription is wired, remove the `refetch` return value and the
-  // `onSuccess` prop threading from TransactionTable / TransactionList / cards.
+  // The `refetch` return value can stay — it's just backed by invalidateQueries
+  // either way, so no consumer (TransactionTable / TransactionList / cards) needs
+  // to change when this subscription is added.
   const refetch = useCallback(() => {
-    void fetchData(currentMonthRef.current)
-  }, [fetchData])
+    void queryClient.invalidateQueries({ queryKey: ['transactions'] })
+  }, [queryClient])
 
-  useEffect(() => {
-    void fetchData(undefined)
-    void fetch('/api/categories')
-      .then((r) => r.json())
-      .then((cats: Category[]) => setCategories(cats))
-  }, [fetchData])
-
-  return { transactions, categories, summary, loading, error, refetch, fetchMonth }
+  return {
+    transactions: query.data?.data ?? [],
+    categories:   categoriesQuery.data ?? [],
+    summary:      query.data?.summary ?? null,
+    loading:      query.isLoading,
+    error:        query.isError ? 'Error al cargar transacciones' : null,
+    refetch,
+    fetchMonth,
+  }
 }
