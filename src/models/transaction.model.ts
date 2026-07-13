@@ -5,11 +5,12 @@ export async function getMonthTransactions(
   supabase: SupabaseServerClient,
   startDate: string,
   endDate: string,
+  excluded: boolean,
 ): Promise<TransactionWithCategory[]> {
   const { data, error } = await supabase
     .from('transactions')
     .select('message_id, datetime, merchant, amount, currency, card_last4, category_id, category_override, categories(name)')
-    .eq('excluded', false)
+    .eq('excluded', excluded)
     .gte('datetime', startDate)
     .lt('datetime', endDate)
     .order('datetime', { ascending: false })
