@@ -5,11 +5,13 @@ import * as TransactionService from '@/src/services/transaction.service'
 export async function handleGetTransactions(
   request: NextRequest,
 ): Promise<NextResponse> {
-  const monthParam = new URL(request.url).searchParams.get('month') ?? undefined
+  const url = new URL(request.url)
+  const monthParam = url.searchParams.get('month') ?? undefined
+  const excludedParam = url.searchParams.get('excluded') === 'true'
 
   try {
     const supabase = await createServerClient()
-    const result = await TransactionService.getTransactions(supabase, monthParam)
+    const result = await TransactionService.getTransactions(supabase, monthParam, excludedParam)
     return NextResponse.json(result)
   } catch (err) {
     console.error('[transactions] GET error:', err)
@@ -77,6 +79,23 @@ export async function handleExcludeTransaction(
     return NextResponse.json(result)
   } catch (err) {
     console.error('[transactions] DELETE error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function handleRestoreTransaction(
+  messageId: string,
+): Promise<NextResponse> {
+  if (!messageId) {
+    return NextResponse.json({ error: 'message_id is required' }, { status: 400 })
+  }
+
+  try {
+    const supabase = await createServerClient()
+    const result = await TransactionService.restoreTransaction(supabase, messageId)
+    return NextResponse.json(result)
+  } catch (err) {
+    console.error('[transactions] restore error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
