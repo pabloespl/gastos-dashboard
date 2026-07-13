@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCategories } from '@/app/hooks/useCategories'
 import type { TransferWithCategory, TransfersResponse } from '@/src/types/transfer'
 import type { Category } from '@/src/types/category'
 
@@ -12,37 +14,31 @@ interface UseTransfersReturn {
   refetch:    () => void
 }
 
-export function useTransfers(): UseTransfersReturn {
-  const [transfers, setTransfers]   = useState<TransferWithCategory[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState<string | null>(null)
+async function fetchTransfers(): Promise<TransfersResponse> {
+  const res = await fetch('/api/transfers')
+  if (!res.ok) throw new Error('Error al cargar transferencias')
+  return res.json() as Promise<TransfersResponse>
+}
 
-  const fetchData = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/transfers')
-      if (!res.ok) { setError('Error al cargar transferencias'); return }
-      const json = (await res.json()) as TransfersResponse
-      setTransfers(json.data)
-    } catch {
-      setError('Error de red')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+export function useTransfers(): UseTransfersReturn {
+  const queryClient = useQueryClient()
+
+  const query = useQuery({
+    queryKey: ['transfers'],
+    queryFn: fetchTransfers,
+  })
+
+  const categoriesQuery = useCategories()
 
   const refetch = useCallback(() => {
-    void fetchData()
-  }, [fetchData])
+    void queryClient.invalidateQueries({ queryKey: ['transfers'] })
+  }, [queryClient])
 
-  useEffect(() => {
-    void fetchData()
-    void fetch('/api/categories')
-      .then((r) => r.json())
-      .then((cats: Category[]) => setCategories(cats))
-  }, [fetchData])
-
-  return { transfers, categories, loading, error, refetch }
+  return {
+    transfers:  query.data?.data ?? [],
+    categories: categoriesQuery.data ?? [],
+    loading:    query.isLoading || query.isFetching,
+    error:      query.isError ? 'Error al cargar transferencias' : null,
+    refetch,
+  }
 }
