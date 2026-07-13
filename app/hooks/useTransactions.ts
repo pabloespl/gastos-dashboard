@@ -12,17 +12,23 @@ import type {
 import type { Category } from '@/src/types/category'
 
 interface UseTransactionsReturn {
-  transactions: TransactionWithCategory[]
-  categories:   Category[]
-  summary:      TransactionSummary | null
-  loading:      boolean
-  error:        string | null
-  refetch:      () => void
-  fetchMonth:   (month: string) => void
+  transactions:       TransactionWithCategory[]
+  categories:         Category[]
+  summary:            TransactionSummary | null
+  loading:            boolean
+  error:              string | null
+  refetch:            () => void
+  fetchMonth:         (month: string) => void
+  showExcluded:       boolean
+  toggleShowExcluded: () => void
 }
 
-async function fetchTransactions(month?: string): Promise<TransactionsResponse> {
-  const url = month ? `/api/transactions?month=${encodeURIComponent(month)}` : '/api/transactions'
+async function fetchTransactions(month: string | undefined, excluded: boolean): Promise<TransactionsResponse> {
+  const params = new URLSearchParams()
+  if (month) params.set('month', month)
+  if (excluded) params.set('excluded', 'true')
+  const qs = params.toString()
+  const url = qs ? `/api/transactions?${qs}` : '/api/transactions'
   const res = await fetch(url)
   if (!res.ok) throw new Error('Error al cargar transacciones')
   return res.json() as Promise<TransactionsResponse>
@@ -30,19 +36,24 @@ async function fetchTransactions(month?: string): Promise<TransactionsResponse> 
 
 export function useTransactions(): UseTransactionsReturn {
   const [month, setMonth] = useState<string | undefined>(undefined)
+  const [showExcluded, setShowExcluded] = useState(false)
   const queryClient = useQueryClient()
 
   const resolvedMonth = month ?? getCurrentYearMonth()
 
   const query = useQuery({
-    queryKey: ['transactions', resolvedMonth],
-    queryFn: () => fetchTransactions(month),
+    queryKey: ['transactions', resolvedMonth, showExcluded],
+    queryFn: () => fetchTransactions(month, showExcluded),
   })
 
   const categoriesQuery = useCategories()
 
   const fetchMonth = useCallback((m: string) => {
     setMonth(m)
+  }, [])
+
+  const toggleShowExcluded = useCallback(() => {
+    setShowExcluded(v => !v)
   }, [])
 
   // REALTIME: This is the swap point for a Supabase Realtime subscription.
@@ -73,5 +84,7 @@ export function useTransactions(): UseTransactionsReturn {
     error:        query.isError ? 'Error al cargar transacciones' : null,
     refetch,
     fetchMonth,
+    showExcluded,
+    toggleShowExcluded,
   }
 }
