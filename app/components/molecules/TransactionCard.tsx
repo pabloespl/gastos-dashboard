@@ -1,6 +1,6 @@
 'use client'
 
-import { CreditCard, Trash2 } from 'lucide-react'
+import { CreditCard, Trash2, RotateCcw } from 'lucide-react'
 import { CategorySelect } from '@/app/components/molecules/CategorySelect'
 import { formatCLP, formatChileDateShort } from '@/app/lib/utils'
 import { useAmountsVisible } from '@/app/context/AmountsVisibilityContext'
@@ -14,6 +14,8 @@ interface TransactionCardProps {
   onBulkPrompt: (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
   onExclude: (messageId: string) => void
+  onRestore: (messageId: string) => void
+  mode: 'active' | 'excluded'
 }
 
 export function TransactionCard({
@@ -23,6 +25,8 @@ export function TransactionCard({
   onBulkPrompt,
   onSuccess,
   onExclude,
+  onRestore,
+  mode,
 }: TransactionCardProps) {
   const { isVisible } = useAmountsVisible()
   return (
@@ -40,7 +44,7 @@ export function TransactionCard({
                 : `USD ${t.amount.toFixed(2)}`}
         </p>
       </div>
-      {/* Fila 2: categoría + metadato (fecha · tarjeta) + excluir */}
+      {/* Fila 2: categoría + metadato (fecha · tarjeta) + excluir/restaurar */}
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <CategorySelect
           variant="badge"
@@ -64,19 +68,35 @@ export function TransactionCard({
               </>
             )}
           </span>
-          <button
-            type="button"
-            aria-label="Excluir transacción"
-            title="Excluir transacción"
-            onClick={() => {
-              if (window.confirm('¿Excluir esta transacción del dashboard?')) {
-                onExclude(t.message_id)
-              }
-            }}
-            className="rounded-md p-1 text-text-muted transition-colors hover:bg-red-500/10 hover:text-red-500"
-          >
-            <Trash2 size={14} />
-          </button>
+          {mode === 'excluded' ? (
+            <button
+              type="button"
+              aria-label="Restaurar transacción"
+              title="Restaurar transacción"
+              onClick={() => {
+                if (window.confirm('¿Restaurar esta transacción al dashboard?')) {
+                  onRestore(t.message_id)
+                }
+              }}
+              className="rounded-md p-1 text-text-muted transition-colors hover:bg-green-500/10 hover:text-green-600"
+            >
+              <RotateCcw size={14} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              aria-label="Excluir transacción"
+              title="Excluir transacción"
+              onClick={() => {
+                if (window.confirm('¿Excluir esta transacción del dashboard?')) {
+                  onExclude(t.message_id)
+                }
+              }}
+              className="rounded-md p-1 text-text-muted transition-colors hover:bg-red-500/10 hover:text-red-500"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -11,6 +11,8 @@ interface TransactionListProps {
   onBulkPrompt: (messageId: string, merchant: string, uncategorizedCount: number, categorizedCount: number, categoryId: number, categoryName: string) => void
   onSuccess?: () => void
   onExclude: (messageId: string) => void
+  onRestore: (messageId: string) => void
+  mode: 'active' | 'excluded'
 }
 
 export function TransactionList({
@@ -20,11 +22,13 @@ export function TransactionList({
   onBulkPrompt,
   onSuccess,
   onExclude,
+  onRestore,
+  mode,
 }: TransactionListProps) {
   if (transactions.length === 0) {
     return (
       <p className="sm:hidden px-4 py-12 text-center text-sm text-text-muted">
-        No hay transacciones registradas aún.
+        {mode === 'excluded' ? 'No hay transacciones excluidas.' : 'No hay transacciones registradas aún.'}
       </p>
     )
   }
@@ -40,6 +44,8 @@ export function TransactionList({
           onBulkPrompt={onBulkPrompt}
           onSuccess={onSuccess}
           onExclude={onExclude}
+          onRestore={onRestore}
+          mode={mode}
         />
       ))}
     </div>
