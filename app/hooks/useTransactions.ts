@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCategories } from '@/app/hooks/useCategories'
+import { getCurrentYearMonth } from '@/app/lib/utils'
 import type {
   TransactionWithCategory,
   TransactionSummary,
@@ -31,8 +32,10 @@ export function useTransactions(): UseTransactionsReturn {
   const [month, setMonth] = useState<string | undefined>(undefined)
   const queryClient = useQueryClient()
 
+  const resolvedMonth = month ?? getCurrentYearMonth()
+
   const query = useQuery({
-    queryKey: ['transactions', month ?? 'current'],
+    queryKey: ['transactions', resolvedMonth],
     queryFn: () => fetchTransactions(month),
   })
 

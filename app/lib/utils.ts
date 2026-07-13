@@ -54,6 +54,12 @@ export interface MonthBounds {
   monthLabel: string
 }
 
+export function getCurrentYearMonth(): string {
+  return new Intl.DateTimeFormat('sv', { timeZone: TZ })
+    .format(new Date())
+    .substring(0, 7)
+}
+
 export function getMonthBounds(): MonthBounds {
   const now = new Date()
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -85,9 +91,7 @@ export function getMonthBoundsFor(yearMonth: string): MonthBounds {
   const year  = parseInt(yearStr, 10)
   const month = parseInt(monthStr, 10)
 
-  const currentYearMonth = new Intl.DateTimeFormat('sv', { timeZone: TZ })
-    .format(new Date())
-    .substring(0, 7)
+  const currentYearMonth = getCurrentYearMonth()
 
   const startTs     = new Date(Date.UTC(year, month - 1, 1))
   const endTs       = new Date(Date.UTC(year, month, 1))
