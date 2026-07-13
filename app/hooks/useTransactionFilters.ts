@@ -2,12 +2,7 @@
 
 import { useState, useMemo, useRef } from 'react'
 import type { TransactionWithCategory } from '@/src/types/transaction'
-
-const TZ = 'America/Santiago'
-
-function getCurrentYearMonth(): string {
-  return new Intl.DateTimeFormat('sv', { timeZone: TZ }).format(new Date()).substring(0, 7)
-}
+import { getCurrentYearMonth } from '@/app/lib/utils'
 
 export interface TransactionFilters {
   category: string   // numeric id | "uncategorized" | ""
