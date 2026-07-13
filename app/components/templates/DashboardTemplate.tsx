@@ -40,6 +40,8 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
     loading,
     refetch,
     fetchMonth,
+    showExcluded,
+    toggleShowExcluded,
   } = useTransactions()
 
   const { filters, setFilters, filteredTransactions, hasActiveFilters } =
@@ -84,6 +86,15 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
   const handleExclude = useCallback(
     async (messageId: string) => {
       const res = await fetch(`/api/transactions/${messageId}`, { method: 'DELETE' })
+      if (!res.ok) return
+      refetch()
+    },
+    [refetch],
+  )
+
+  const handleRestore = useCallback(
+    async (messageId: string) => {
+      const res = await fetch(`/api/transactions/${messageId}/restore`, { method: 'POST' })
       if (!res.ok) return
       refetch()
     },
@@ -166,13 +177,22 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
         <div className="rounded-2xl border border-border bg-bg-card shadow-sm">
           <div className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-6">
             <h2 className="text-sm font-semibold text-text-primary">Transacciones</h2>
-            {transactions.length > 0 && (
-              <span className="text-xs text-text-muted">
-                {hasActiveFilters
-                  ? `${filteredTransactions.length} de ${transactions.length}`
-                  : `${transactions.length} en total`}
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {transactions.length > 0 && (
+                <span className="text-xs text-text-muted">
+                  {hasActiveFilters
+                    ? `${filteredTransactions.length} de ${transactions.length}`
+                    : `${transactions.length} en total`}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={toggleShowExcluded}
+                className="rounded-md border border-border px-2.5 py-1 text-xs text-text-muted hover:bg-bg-secondary hover:text-text-primary"
+              >
+                {showExcluded ? 'Ver activas' : 'Ver excluidas'}
+              </button>
+            </div>
           </div>
 
           <FilterBar
@@ -196,6 +216,8 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
                 onBulkPrompt={handleBulkPrompt}
                 onSuccess={refetch}
                 onExclude={handleExclude}
+                onRestore={handleRestore}
+                mode={showExcluded ? 'excluded' : 'active'}
               />
               <TransactionTable
                 transactions={paginatedItems}
@@ -204,6 +226,8 @@ export function DashboardTemplate({ userEmail, fullName = null }: DashboardTempl
                 onBulkPrompt={handleBulkPrompt}
                 onSuccess={refetch}
                 onExclude={handleExclude}
+                onRestore={handleRestore}
+                mode={showExcluded ? 'excluded' : 'active'}
               />
             </>
           )}
