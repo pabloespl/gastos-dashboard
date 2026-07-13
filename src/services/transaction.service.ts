@@ -20,9 +20,15 @@ export async function getTransactions(
 
   const txns = await TransactionModel.getMonthTransactions(supabase, start, end, excluded)
 
+  // The summary always reflects active (non-excluded) spending, even when
+  // browsing the excluded list to restore something — it's not a report view.
+  const summaryTxns = excluded
+    ? await TransactionModel.getMonthTransactions(supabase, start, end, false)
+    : txns
+
   return {
     data: txns,
-    summary: computeSummary(txns, daysElapsed, daysInMonth, monthLabel),
+    summary: computeSummary(summaryTxns, daysElapsed, daysInMonth, monthLabel),
   }
 }
 
