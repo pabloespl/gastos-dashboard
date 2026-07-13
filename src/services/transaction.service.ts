@@ -13,11 +13,12 @@ import type {
 export async function getTransactions(
   supabase: SupabaseServerClient,
   month?: string,
+  excluded: boolean = false,
 ): Promise<TransactionsResponse> {
   const { start, end, daysElapsed, daysInMonth, monthLabel } =
     month ? getMonthBoundsFor(month) : getMonthBounds()
 
-  const txns = await TransactionModel.getMonthTransactions(supabase, start, end)
+  const txns = await TransactionModel.getMonthTransactions(supabase, start, end, excluded)
 
   return {
     data: txns,
@@ -70,6 +71,14 @@ export async function excludeTransaction(
 ): Promise<{ message_id: string; excluded: boolean }> {
   await TransactionModel.setTransactionExcluded(supabase, messageId, true)
   return { message_id: messageId, excluded: true }
+}
+
+export async function restoreTransaction(
+  supabase: SupabaseServerClient,
+  messageId: string,
+): Promise<{ message_id: string; excluded: boolean }> {
+  await TransactionModel.setTransactionExcluded(supabase, messageId, false)
+  return { message_id: messageId, excluded: false }
 }
 
 function toDayKey(iso: string): string {
