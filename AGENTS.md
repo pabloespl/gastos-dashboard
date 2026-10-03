@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## What this is
 
 A personal expense dashboard (single-user). Bank/credit-card transactions and bank transfers land in a Google Sheet (via email parsing, external to this repo), get synced into Supabase, and are displayed/categorized in a Next.js webapp. Content and comments in the codebase are in Spanish; keep new comments/commit messages consistent with that unless told otherwise.
