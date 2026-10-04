@@ -74,15 +74,44 @@ async function getPendingRows() {
 // ------------------------------------------------------------
 async function findCandidates(row) {
   const operationDate = new Date(`${row.operation_date}T12:00:00Z`);
-  const from = new Date(operationDate.getTime() - 24 * 60 * 60 * 1000);
-  const to = new Date(operationDate.getTime() + 24 * 60 * 60 * 1000);
+  const previousDate = new Date(operationDate);
+  previousDate.setUTCDate(previousDate.getUTCDate() - 1);
+  const followingDate = new Date(operationDate);
+  followingDate.setUTCDate(followingDate.getUTCDate() + 2);
+  const chileDateFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Santiago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+  const chileDayStart = (date)=>{
+    const localDate = date.toISOString().slice(0, 10);
+    const chileDate = (instant)=>{
+      const parts = chileDateFormatter.formatToParts(instant);
+      const get = (type)=>parts.find((part)=>part.type === type)?.value;
+      return `${get("year")}-${get("month")}-${get("day")}`;
+    };
+    let low = date.getTime() - 36 * 60 * 60 * 1000;
+    let high = date.getTime() + 36 * 60 * 60 * 1000;
+    while (low < high){
+      const middle = Math.floor((low + high) / 2);
+      if (chileDate(new Date(middle)) < localDate) {
+        low = middle + 1;
+      } else {
+        high = middle;
+      }
+    }
+    return new Date(low);
+  };
+  const from = chileDayStart(previousDate);
+  const to = chileDayStart(followingDate);
   const params = new URLSearchParams({
     amount: `eq.${row.amount}`,
     currency: `eq.${row.currency}`,
     datetime: `gte.${from.toISOString()}`,
     select: "message_id,datetime,merchant,amount,currency,card_last4"
   });
-  params.append("datetime", `lte.${to.toISOString()}`);
+  params.append("datetime", `lt.${to.toISOString()}`);
   const response = await fetch(`${SUPABASE_URL}/rest/v1/transactions?${params}`, {
     headers: headers()
   });
