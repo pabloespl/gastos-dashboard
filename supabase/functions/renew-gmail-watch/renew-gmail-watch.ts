@@ -35,7 +35,8 @@ Deno.serve(async ()=>{
       body: JSON.stringify({
         topicName: "projects/gastos-dashboard-500514/topics/gmail-bank-transactions",
         labelIds: [
-          "Label_26855318194589338"
+          "Label_26855318194589338",
+          "Label_5909924738869112246"
         ],
         labelFilterBehavior: "INCLUDE"
       })
