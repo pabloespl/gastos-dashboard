@@ -1,5 +1,3 @@
-// Gmail watch renewal for bank transactions and statements
-
 async function getGoogleAccessToken() {
   const clientId = Deno.env.get("GOOGLE_CLIENT_ID");
   const clientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET");
