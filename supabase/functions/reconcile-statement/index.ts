@@ -38,9 +38,13 @@ function merchantSimilarity(a, b) {
   return intersection / union;
 }
 function isIgnoredStatementRow(row) {
+  if (Number(row.amount) < 0) {
+    return true;
+  }
   const description = (row.description ?? "").toUpperCase();
   const ignoredPatterns = [
     "MONTO CANCELADO",
+    "TRASPASO DEUDA",
     "PAGO",
     "ABONO",
     "COMISION",
@@ -72,12 +76,12 @@ async function getPendingRows() {
 // ------------------------------------------------------------
 // Find candidate transactions
 // ------------------------------------------------------------
-async function findCandidates(row) {
+async function findCandidates(row, calendarDayRange = 1) {
   const operationDate = new Date(`${row.operation_date}T12:00:00Z`);
   const previousDate = new Date(operationDate);
-  previousDate.setUTCDate(previousDate.getUTCDate() - 1);
+  previousDate.setUTCDate(previousDate.getUTCDate() - calendarDayRange);
   const followingDate = new Date(operationDate);
-  followingDate.setUTCDate(followingDate.getUTCDate() + 2);
+  followingDate.setUTCDate(followingDate.getUTCDate() + calendarDayRange + 1);
   const chileDateFormatter = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Santiago",
     year: "numeric",
@@ -151,6 +155,32 @@ async function reconcileRow(row) {
   }
   const candidates = await findCandidates(row);
   if (candidates.length === 0) {
+    const fallbackCandidates = await findCandidates(row, 3);
+    if (fallbackCandidates.length > 0) {
+      const scored = fallbackCandidates.map((candidate)=>(
+        {
+          ...candidate,
+          similarity: merchantSimilarity(row.description, candidate.merchant)
+        }
+      )).sort((a, b)=>b.similarity - a.similarity);
+      const best = scored[0];
+      const second = scored[1];
+      const bestIsStrong = best.similarity >= 0.80;
+      const clearlyBetter = !second || best.similarity - second.similarity >= 0.20;
+      if (bestIsStrong && clearlyBetter) {
+        await updateRow(row.id, "matched", best.message_id);
+        return {
+          status: "matched",
+          similarity: best.similarity
+        };
+      }
+      if (bestIsStrong && second && !clearlyBetter) {
+        await updateRow(row.id, "ambiguous", null);
+        return {
+          status: "ambiguous"
+        };
+      }
+    }
     await updateRow(row.id, "missing", null);
     return {
       status: "missing"
