@@ -298,7 +298,7 @@ def save_rows_to_supabase(
 
             "Prefer":
                 (
-                    "resolution=merge-duplicates,"
+                    "resolution=ignore-duplicates,"
                     "return=minimal"
                 ),
         },
