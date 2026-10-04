@@ -181,6 +181,16 @@ async function reconcileRow(row) {
         };
       }
     }
+    const diagnosticCandidates = await findCandidates(row, 7);
+    const hasPlausibleDiagnosticCandidate = diagnosticCandidates.some((candidate)=>
+      merchantSimilarity(row.description, candidate.merchant) >= 0.80
+    );
+    if (hasPlausibleDiagnosticCandidate) {
+      await updateRow(row.id, "ambiguous", null);
+      return {
+        status: "ambiguous"
+      };
+    }
     await updateRow(row.id, "missing", null);
     return {
       status: "missing"
