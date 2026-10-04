@@ -250,6 +250,35 @@ async function getAttachment(accessToken, messageId, attachmentId) {
   }
   return decodeBase64UrlBytes(data.data);
 }
+async function reconcileStatement(messageId, filename) {
+  const MAX_ITERATIONS = 20;
+  console.log(`Reconciliation started: message=${messageId} filename=${filename}`);
+  try {
+    for(let iteration = 1; iteration <= MAX_ITERATIONS; iteration++){
+      console.log(`Reconciliation iteration: ${iteration}`);
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/reconcile-statement`, {
+        method: "POST",
+        headers: supabaseHeaders()
+      });
+      const responseText = await response.text();
+      if (!response.ok) {
+        throw new Error(`Reconcile statement failed with status ${response.status}: ${responseText}`);
+      }
+      console.log(`Reconciliation HTTP status: ${response.status}`);
+      const result = JSON.parse(responseText);
+      if (result.ok !== true) {
+        throw new Error("Reconcile statement returned an unsuccessful result");
+      }
+      if (result.remaining !== true) {
+        return;
+      }
+    }
+    throw new Error(`Reconciliation still has remaining work after ${MAX_ITERATIONS} iterations`);
+  } catch (err) {
+    console.error(`Reconciliation failure: message=${messageId} filename=${filename}`, err);
+    throw err;
+  }
+}
 async function sendStatementToParser(messageId, filename, pdfBytes) {
   if (!STATEMENT_PDF_PASSWORD) {
     throw new Error("STATEMENT_PDF_PASSWORD is not configured");
@@ -275,6 +304,7 @@ async function sendStatementToParser(messageId, filename, pdfBytes) {
   if (result.ok !== true) {
     throw new Error(`Statement parser returned an unsuccessful result for ${messageId}/${filename}`);
   }
+  await reconcileStatement(messageId, filename);
 }
 async function processStatementMessage(accessToken, message) {
   console.log(`Statement message detected: ${message.id}`);
