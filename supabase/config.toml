@@ -1,0 +1,16 @@
+project_id = "hwfxyltobyctzreyhxvt"
+
+[functions.gmail-webhook]
+verify_jwt = false
+
+[functions.renew-gmail-watch]
+verify_jwt = false
+
+[functions.backfill-gmail-history]
+verify_jwt = false
+
+[functions.process-staging]
+verify_jwt = false
+
+[functions.reconcile-statement]
+verify_jwt = false
