@@ -44,6 +44,17 @@ tsconfig.tsbuildinfo
 # Supabase
 supabase/.temp
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
 # Claude Code skills (managed via skills-lock.json)
 .agents/skills/
 
