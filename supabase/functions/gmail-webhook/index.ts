@@ -2,7 +2,8 @@ const BANK_LABEL_ID = "Label_26855318194589338";
 const BANK_STATEMENTS_LABEL_ID = "Label_5909924738869112246";
 const BANK_SENDER = "enviodigital@bancochile.cl";
 const BANK_SUBJECT = "Compra con Tarjeta de Crédito";
-const STATEMENT_PARSER_URL = "https://statement-parser-715439212939.us-east4.run.app/parse-and-save";
+const STATEMENT_PARSER_AUDIENCE = "https://statement-parser-715439212939.us-east4.run.app";
+const STATEMENT_PARSER_URL = `${STATEMENT_PARSER_AUDIENCE}/parse-and-save`;
 const STATEMENT_PDF_PASSWORD = Deno.env.get("STATEMENT_PDF_PASSWORD");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -10,6 +11,9 @@ const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_CLIENT_ID");
 const GOOGLE_CLIENT_SECRET = Deno.env.get("GOOGLE_CLIENT_SECRET");
 const GOOGLE_REFRESH_TOKEN = Deno.env.get("GOOGLE_REFRESH_TOKEN");
 const MAX_RETRIES = 5;
+const ID_TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
+let cachedStatementParserIdToken = null;
+let cachedStatementParserIdTokenExpiresAt = 0;
 // ------------------------------------------------------------
 // Utils
 // ------------------------------------------------------------
@@ -40,6 +44,120 @@ function decodeBase64UrlBytes(value) {
   }
   const binary = atob(normalized);
   return Uint8Array.from(binary, (char)=>char.charCodeAt(0));
+}
+function encodeBase64Url(value) {
+  const bytes = typeof value === "string" ? new TextEncoder().encode(value) : value;
+  let binary = "";
+  for (const byte of bytes){
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function parseServiceAccountCredentials() {
+  const rawCredentials = Deno.env.get("GOOGLE_CLOUD_RUN_INVOKER_CREDENTIALS");
+  if (!rawCredentials) {
+    throw new Error("GOOGLE_CLOUD_RUN_INVOKER_CREDENTIALS is not configured");
+  }
+  let credentials;
+  try {
+    credentials = JSON.parse(rawCredentials);
+  } catch {
+    throw new Error("GOOGLE_CLOUD_RUN_INVOKER_CREDENTIALS is not valid JSON");
+  }
+  if (!credentials || typeof credentials !== "object" || typeof credentials.client_email !== "string" || !credentials.client_email || typeof credentials.private_key !== "string" || !credentials.private_key || typeof credentials.token_uri !== "string" || !credentials.token_uri) {
+    throw new Error("GOOGLE_CLOUD_RUN_INVOKER_CREDENTIALS is missing client_email, private_key, or token_uri");
+  }
+  return credentials;
+}
+async function importPrivateKey(privateKey) {
+  const pemContents = privateKey.replace(/\\n/g, "\n").replace(/-----BEGIN PRIVATE KEY-----/g, "").replace(/-----END PRIVATE KEY-----/g, "").replace(/\s/g, "");
+  let keyBytes;
+  try {
+    const binary = atob(pemContents);
+    keyBytes = Uint8Array.from(binary, (char)=>char.charCodeAt(0));
+  } catch {
+    throw new Error("Cloud Run invoker private_key is malformed");
+  }
+  try {
+    return await crypto.subtle.importKey("pkcs8", keyBytes, {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: "SHA-256"
+    }, false, [
+      "sign"
+    ]);
+  } catch {
+    throw new Error("Cloud Run invoker private_key could not be imported");
+  }
+}
+async function createServiceAccountAssertion(credentials) {
+  const now = Math.floor(Date.now() / 1000);
+  const header = encodeBase64Url(JSON.stringify({
+    alg: "RS256",
+    typ: "JWT"
+  }));
+  const payload = encodeBase64Url(JSON.stringify({
+    iss: credentials.client_email,
+    aud: credentials.token_uri,
+    scope: "https://www.googleapis.com/auth/cloud-platform",
+    iat: now,
+    exp: now + 3600
+  }));
+  const unsignedAssertion = `${header}.${payload}`;
+  const privateKey = await importPrivateKey(credentials.private_key);
+  const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", privateKey, new TextEncoder().encode(unsignedAssertion));
+  return `${unsignedAssertion}.${encodeBase64Url(new Uint8Array(signature))}`;
+}
+function getJwtExpiry(token) {
+  try {
+    const payload = JSON.parse(decodeBase64Url(token.split(".")[1]));
+    return typeof payload.exp === "number" ? payload.exp * 1000 : 0;
+  } catch {
+    return 0;
+  }
+}
+async function getStatementParserIdToken() {
+  if (cachedStatementParserIdToken && Date.now() < cachedStatementParserIdTokenExpiresAt - ID_TOKEN_REFRESH_MARGIN_MS) {
+    return cachedStatementParserIdToken;
+  }
+  const credentials = parseServiceAccountCredentials();
+  const assertion = await createServiceAccountAssertion(credentials);
+  const oauthResponse = await fetch(credentials.token_uri, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion
+    })
+  });
+  const oauthResult = await oauthResponse.json().catch(()=>null);
+  if (!oauthResponse.ok || typeof oauthResult?.access_token !== "string") {
+    throw new Error(`Cloud Run invoker OAuth token exchange failed with status ${oauthResponse.status}`);
+  }
+  const serviceAccount = encodeURIComponent(credentials.client_email);
+  const idTokenResponse = await fetch(`https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${serviceAccount}:generateIdToken`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${oauthResult.access_token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      audience: STATEMENT_PARSER_AUDIENCE,
+      includeEmail: true
+    })
+  });
+  const idTokenResult = await idTokenResponse.json().catch(()=>null);
+  if (!idTokenResponse.ok || typeof idTokenResult?.token !== "string") {
+    throw new Error(`Cloud Run ID token generation failed with status ${idTokenResponse.status}`);
+  }
+  const expiresAt = getJwtExpiry(idTokenResult.token);
+  if (!expiresAt) {
+    throw new Error("Cloud Run ID token has no valid expiry");
+  }
+  cachedStatementParserIdToken = idTokenResult.token;
+  cachedStatementParserIdTokenExpiresAt = expiresAt;
+  return cachedStatementParserIdToken;
 }
 // ------------------------------------------------------------
 // Google OAuth
@@ -311,9 +429,13 @@ async function sendStatementToParser(messageId, filename, pdfBytes) {
     type: "application/pdf"
   }), filename);
   formData.append("password", STATEMENT_PDF_PASSWORD);
+  const idToken = await getStatementParserIdToken();
   console.log(`Cloud Run request: message=${messageId} filename=${filename}`);
   const response = await fetch(STATEMENT_PARSER_URL, {
     method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`
+    },
     body: formData
   });
   const responseText = await response.text();
