@@ -14,6 +14,7 @@ from fastapi import (
     HTTPException,
 )
 
+
 app = FastAPI()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
