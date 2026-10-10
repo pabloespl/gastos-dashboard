@@ -21,6 +21,19 @@ type TransactionCandidate = {
   source: "statement";
 };
 
+type RepairResult = {
+  statement_transaction_id: number;
+  status: "inserted" | "already_existing" | "error";
+  message_id?: string;
+  error?: string;
+};
+
+type RepairRpcResult = {
+  repaired: boolean;
+  inserted: boolean;
+  message_id: string | null;
+};
+
 function requireEnvironment() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error(
@@ -167,25 +180,133 @@ function buildCandidate(row: StatementRow): TransactionCandidate {
   };
 }
 
-Deno.serve(async () => {
-  try {
-    console.log("Starting repair-missing-transactions in dry-run mode");
-    const rows = await getMissingRows();
-    const candidates = rows.map(buildCandidate);
-    console.log(`Dry run completed with ${candidates.length} candidates`);
+async function repairRow(row: StatementRow): Promise<RepairResult> {
+  const candidate = buildCandidate(row);
+  const { url, serviceRoleKey } = requireEnvironment();
+  const response = await fetch(
+    `${url}/rest/v1/rpc/repair_missing_statement_transaction`,
+    {
+      method: "POST",
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        p_statement_transaction_id: row.id,
+        p_datetime: candidate.datetime,
+      }),
+    },
+  );
 
+  if (!response.ok) {
+    console.error(
+      `Failed repairing statement row ${row.id}:`,
+      response.status,
+      await response.text(),
+    );
+    throw new Error("Could not repair the statement transaction");
+  }
+
+  const results = await response.json() as RepairRpcResult[];
+  const result = results[0];
+  if (!result?.repaired) {
+    throw new Error("Statement row is no longer in missing state");
+  }
+
+  return {
+    statement_transaction_id: row.id,
+    status: result.inserted ? "inserted" : "already_existing",
+    message_id: result.message_id ?? undefined,
+  };
+}
+
+async function readDryRun(request: Request) {
+  const body = await request.text();
+  if (!body.trim()) return true;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    throw new Error("Request body must be valid JSON");
+  }
+
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new Error("Request body must be a JSON object");
+  }
+
+  const dryRun = (parsed as { dry_run?: unknown }).dry_run;
+  if (dryRun === undefined) return true;
+  if (typeof dryRun !== "boolean") {
+    throw new Error("dry_run must be a boolean");
+  }
+  return dryRun;
+}
+
+Deno.serve(async (request) => {
+  let dryRun = true;
+  try {
+    dryRun = await readDryRun(request);
+    console.log(
+      `Starting repair-missing-transactions in ${dryRun ? "dry-run" : "write"} mode`,
+    );
+    const rows = await getMissingRows();
+
+    if (dryRun) {
+      const candidates = rows.map(buildCandidate);
+      console.log(`Dry run completed with ${candidates.length} candidates`);
+      return Response.json({
+        ok: true,
+        dry_run: true,
+        count: candidates.length,
+        candidates,
+      });
+    }
+
+    const results: RepairResult[] = [];
+    let inserted = 0;
+    let alreadyExisting = 0;
+    let repaired = 0;
+    let errors = 0;
+
+    for (const row of rows) {
+      try {
+        const result = await repairRow(row);
+        results.push(result);
+        repaired++;
+        if (result.status === "inserted") inserted++;
+        if (result.status === "already_existing") alreadyExisting++;
+      } catch (error) {
+        console.error(`Error repairing statement row ${row.id}:`, error);
+        errors++;
+        results.push({
+          statement_transaction_id: row.id,
+          status: "error",
+          error: error instanceof Error ? error.message : "Unexpected repair error",
+        });
+      }
+    }
+
+    console.log(
+      `Repair completed: ${repaired} repaired, ${errors} errors`,
+    );
     return Response.json({
-      ok: true,
-      dry_run: true,
-      count: candidates.length,
-      candidates,
+      ok: errors === 0,
+      dry_run: false,
+      processed: rows.length,
+      inserted,
+      already_existing: alreadyExisting,
+      repaired,
+      errors,
+      results,
     });
   } catch (error) {
-    console.error("repair-missing-transactions dry-run error:", error);
+    console.error("repair-missing-transactions error:", error);
     return Response.json(
       {
         ok: false,
-        dry_run: true,
+        dry_run: dryRun,
         error: error instanceof Error ? error.message : String(error),
       },
       { status: 500 },
