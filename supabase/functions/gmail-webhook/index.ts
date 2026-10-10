@@ -10,6 +10,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_CLIENT_ID");
 const GOOGLE_CLIENT_SECRET = Deno.env.get("GOOGLE_CLIENT_SECRET");
 const GOOGLE_REFRESH_TOKEN = Deno.env.get("GOOGLE_REFRESH_TOKEN");
+const PUBSUB_PUSH_AUDIENCE = "https://hwfxyltobyctzreyhxvt.supabase.co/functions/v1/gmail-webhook";
+const PUBSUB_PUSH_SERVICE_ACCOUNT = "gmail-webhook-push@gastos-dashboard-500514.iam.gserviceaccount.com";
 const MAX_RETRIES = 5;
 const ID_TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000;
 let cachedStatementParserIdToken = null;
@@ -27,6 +29,34 @@ function supabaseHeaders(extra = {}) {
     "Content-Type": "application/json",
     ...extra
   };
+}
+function unauthorizedResponse() {
+  return Response.json({
+    ok: false,
+    error: "Unauthorized"
+  }, {
+    status: 401
+  });
+}
+async function authenticatePubSubPush(req) {
+  const authorization = req.headers.get("Authorization");
+  const match = authorization?.match(/^Bearer ([^\s]+)$/);
+  if (!match) {
+    return false;
+  }
+  try {
+    const tokenInfoUrl = new URL("https://oauth2.googleapis.com/tokeninfo");
+    tokenInfoUrl.searchParams.set("id_token", match[1]);
+    const response = await fetch(tokenInfoUrl);
+    if (response.status !== 200) {
+      return false;
+    }
+    const claims = await response.json();
+    const expiresAt = Number(claims?.exp);
+    return claims?.aud === PUBSUB_PUSH_AUDIENCE && claims?.email === PUBSUB_PUSH_SERVICE_ACCOUNT && (claims?.email_verified === true || claims?.email_verified === "true") && (claims?.iss === "accounts.google.com" || claims?.iss === "https://accounts.google.com") && Number.isFinite(expiresAt) && expiresAt > Math.floor(Date.now() / 1000);
+  } catch {
+    return false;
+  }
 }
 function decodeBase64Url(value) {
   let normalized = value.replace(/-/g, "+").replace(/_/g, "/");
@@ -681,6 +711,9 @@ async function processMessage(accessToken, messageId) {
 // Webhook
 // ------------------------------------------------------------
 Deno.serve(async (req)=>{
+  if (!await authenticatePubSubPush(req)) {
+    return unauthorizedResponse();
+  }
   try {
     if (req.method !== "POST") {
       return new Response("Method not allowed", {
