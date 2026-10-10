@@ -23,7 +23,24 @@ async function getGoogleAccessToken() {
   }
   return data.access_token;
 }
-Deno.serve(async ()=>{
+Deno.serve(async (req)=>{
+  const cronSecret = Deno.env.get("RENEW_GMAIL_WATCH_SECRET");
+  if (!cronSecret) {
+    return Response.json({
+      ok: false,
+      error: "Internal server error"
+    }, {
+      status: 500
+    });
+  }
+  if (req.headers.get("X-Cron-Secret") !== cronSecret) {
+    return Response.json({
+      ok: false,
+      error: "Unauthorized"
+    }, {
+      status: 401
+    });
+  }
   try {
     const accessToken = await getGoogleAccessToken();
     const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/watch", {
