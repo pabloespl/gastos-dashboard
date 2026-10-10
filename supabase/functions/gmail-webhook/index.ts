@@ -250,34 +250,55 @@ async function getAttachment(accessToken, messageId, attachmentId) {
   }
   return decodeBase64UrlBytes(data.data);
 }
-async function reconcileStatement(messageId, filename) {
+async function reconcileStatement() {
   const MAX_ITERATIONS = 20;
-  console.log(`Reconciliation started: message=${messageId} filename=${filename}`);
-  try {
-    for(let iteration = 1; iteration <= MAX_ITERATIONS; iteration++){
-      console.log(`Reconciliation iteration: ${iteration}`);
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/reconcile-statement`, {
-        method: "POST",
-        headers: supabaseHeaders()
-      });
-      const responseText = await response.text();
-      if (!response.ok) {
-        throw new Error(`Reconcile statement failed with status ${response.status}: ${responseText}`);
-      }
-      console.log(`Reconciliation HTTP status: ${response.status}`);
-      const result = JSON.parse(responseText);
-      if (result.ok !== true) {
-        throw new Error("Reconcile statement returned an unsuccessful result");
-      }
-      if (result.remaining !== true) {
-        return;
-      }
+  for(let iteration = 1; iteration <= MAX_ITERATIONS; iteration++){
+    console.log(`Reconciliation iteration: ${iteration}`);
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/reconcile-statement`, {
+      method: "POST",
+      headers: supabaseHeaders()
+    });
+    const responseText = await response.text();
+    if (!response.ok) {
+      throw new Error(`Reconcile statement failed with status ${response.status}: ${responseText}`);
     }
-    throw new Error(`Reconciliation still has remaining work after ${MAX_ITERATIONS} iterations`);
-  } catch (err) {
-    console.error(`Reconciliation failure: message=${messageId} filename=${filename}`, err);
-    throw err;
+    console.log(`Reconciliation HTTP status: ${response.status}`);
+    const result = JSON.parse(responseText);
+    if (result.ok !== true) {
+      throw new Error("Reconcile statement returned an unsuccessful result");
+    }
+    if (result.remaining === false) {
+      return;
+    }
+    if (result.remaining !== true) {
+      throw new Error("Reconcile statement returned an invalid remaining value");
+    }
   }
+  throw new Error(`Reconciliation still has remaining work after ${MAX_ITERATIONS} iterations`);
+}
+async function repairMissingTransactions() {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/repair-missing-transactions`, {
+    method: "POST",
+    headers: supabaseHeaders(),
+    body: JSON.stringify({
+      dry_run: false
+    })
+  });
+  const responseText = await response.text();
+  if (!response.ok) {
+    throw new Error(`Missing transaction repair failed with status ${response.status}`);
+  }
+  const result = JSON.parse(responseText);
+  if (result.ok !== true || result.errors !== 0) {
+    throw new Error("Missing transaction repair returned an unsuccessful result");
+  }
+  console.log("Missing transaction repair completed:", JSON.stringify({
+    processed: result.processed,
+    inserted: result.inserted,
+    already_existing: result.already_existing,
+    repaired: result.repaired,
+    errors: result.errors
+  }));
 }
 async function sendStatementToParser(messageId, filename, pdfBytes) {
   if (!STATEMENT_PDF_PASSWORD) {
@@ -304,7 +325,6 @@ async function sendStatementToParser(messageId, filename, pdfBytes) {
   if (result.ok !== true) {
     throw new Error(`Statement parser returned an unsuccessful result for ${messageId}/${filename}`);
   }
-  await reconcileStatement(messageId, filename);
 }
 async function processStatementMessage(accessToken, message) {
   console.log(`Statement message detected: ${message.id}`);
@@ -583,6 +603,7 @@ Deno.serve(async (req)=>{
     let staged = 0;
     let parsed = 0;
     let statements = 0;
+    let statementProcessed = false;
     for (const messageId of messageIds){
       const result = await processMessage(accessToken, messageId);
       if (result.saved) {
@@ -593,8 +614,16 @@ Deno.serve(async (req)=>{
       }
       if (result.statement) {
         statements++;
+        statementProcessed = true;
       }
       await sleep(100);
+    }
+    if (statementProcessed) {
+      console.log("Statement batch detected; starting reconciliation");
+      await reconcileStatement();
+      console.log("Statement reconciliation completed");
+      console.log("Starting missing transaction repair");
+      await repairMissingTransactions();
     }
     /*
       Avanzamos exactamente hasta el historyId
