@@ -60,3 +60,4 @@ override.tf.json
 
 # Playwright MCP debug output (console logs, page snapshots)
 .playwright-mcp/
+.env*
