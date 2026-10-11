@@ -18,7 +18,9 @@ from fastapi import (
 app = FastAPI()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv(
+SUPABASE_SECRET_KEY = os.getenv(
+    "SUPABASE_SECRET_KEY"
+) or os.getenv(
     "SUPABASE_SERVICE_ROLE_KEY"
 )
 
@@ -247,7 +249,7 @@ def save_rows_to_supabase(
 ):
     if (
         not SUPABASE_URL
-        or not SUPABASE_SERVICE_ROLE_KEY
+        or not SUPABASE_SECRET_KEY
     ):
         raise RuntimeError(
             "Supabase environment variables "
@@ -285,12 +287,12 @@ def save_rows_to_supabase(
         url,
         headers={
             "apikey":
-                SUPABASE_SERVICE_ROLE_KEY,
+                SUPABASE_SECRET_KEY,
 
             "Authorization":
                 (
                     "Bearer "
-                    + SUPABASE_SERVICE_ROLE_KEY
+                    + SUPABASE_SECRET_KEY
                 ),
 
             "Content-Type":
@@ -324,7 +326,7 @@ def health():
         "ok": True,
         "supabase_configured": bool(
             SUPABASE_URL
-            and SUPABASE_SERVICE_ROLE_KEY
+            and SUPABASE_SECRET_KEY
         ),
     }
 
