@@ -1,6 +1,6 @@
 ## What this is
 
-A personal expense dashboard (single-user). Bank/credit-card transactions and bank transfers land in a Google Sheet (via email parsing, external to this repo), get synced into Supabase, and are displayed/categorized in a Next.js webapp. Content and comments in the codebase are in Spanish; keep new comments/commit messages consistent with that unless told otherwise.
+A personal expense dashboard (single-user). Bank/credit-card transactions and bank transfers are ingested through the Gmail webhook, Supabase, and Cloud Run statement-parser pipeline, then displayed/categorized in a Next.js webapp. Content and comments in the codebase are in Spanish; keep new comments/commit messages consistent with that unless told otherwise.
 
 ## Commands
 
@@ -9,14 +9,10 @@ npm run dev      # start Next.js dev server
 npm run build    # production build
 npm run start    # run production build
 npm run lint     # next lint (eslint-config-next, extends next/core-web-vitals + next/typescript)
-npm run sync:transactions   # Google Sheet "Data" tab → transactions table
-npm run sync:transfers      # Google Sheet "Transfers" tab → transfers table
 npm run notify   # node scripts/notify-summary.js — sends an ntfy.sh push notification
 ```
 
 There is no test suite in this repo currently.
-
-Sync scripts require `.env.local` (loaded via `dotenv`) with `GOOGLE_SHEET_ID`, `GOOGLE_SERVICE_ACCOUNT_JSON` (or local `google-service-account.json`), `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`.
 
 ## Architecture
 
@@ -36,14 +32,7 @@ When adding a new API feature, follow this same chain — don't put Supabase que
 
 - Google OAuth via Supabase Auth. `middleware.ts` gates every route except `/login` and `/auth/callback`: no session → redirect to `/login`; session present but `user.email !== NEXT_PUBLIC_ALLOWED_EMAIL` → sign out and redirect. This is fail-closed: if `NEXT_PUBLIC_ALLOWED_EMAIL` is unset, nobody gets in.
 - This is a single-tenant app hardcoded to one owner email. `NEXT_PUBLIC_ALLOWED_EMAIL` (app-level gate) must match the email baked into the Supabase RLS policies (`auth.jwt() ->> 'email' = '...'`) — see `supabase/migrations/20260629223028_restrict_rls_owner_email.sql`. Changing the owner email requires updating both.
-- `app/lib/supabase/server.ts` creates a per-request SSR client bound to cookies, so the user's real JWT is forwarded to Supabase and RLS is evaluated as that user (not a service role). `app/lib/supabase/client.ts` is the browser-side equivalent. The sync scripts (`scripts/lib/supabase.js`) instead use the service-role key and bypass RLS entirely — that's expected since they run in CI, not as the authenticated user.
-
-### Data sync pipeline (Google Sheets → Supabase)
-
-- `scripts/sync-transactions.js` and `scripts/sync-transfers.js` are independent, incremental syncs. Each tracks its own cursor file at the repo root (`last_sync_transactions.txt`, `last_sync_transfers.txt`) holding the last processed sheet row, via `scripts/lib/sync-cursor.js`.
-- Both scripts: read cursor → fetch only new rows from the sheet (`scripts/lib/google-sheets.js`) → validate column count per row (misaligned rows are logged and skipped, not fatal) → transform rows to DB records → upsert into Supabase on `message_id` conflict → advance the cursor file.
-- `sync-transactions.js` additionally auto-categorizes new, uncategorized transactions by looking up the most recent category previously assigned to the same `merchant` (`buildMerchantCategoryMap`). This only fills in a category guess; it never overrides an explicit `category_override`.
-- `.github/workflows/sync.yml` runs both scripts on `workflow_dispatch` (manual, with a `target: all|transactions|transfers` choice), then commits the updated cursor files back to the repo with `[skip ci]`. If you change cursor file paths/names, update this workflow too.
+- `app/lib/supabase/server.ts` creates a per-request SSR client bound to cookies, so the user's real JWT is forwarded to Supabase and RLS is evaluated as that user (not a service role). `app/lib/supabase/client.ts` is the browser-side equivalent.
 - Schema changes are NOT managed by the Supabase CLI/migration tooling — see `supabase/README.md`. Migrations in `supabase/migrations/` are plain timestamped SQL files applied manually in the Supabase SQL Editor, and committed afterward purely as history. Write new migrations as an idempotent delta (`ADD COLUMN IF NOT EXISTS`, etc.), never edit an already-applied migration file.
 
 ### Frontend data flow
@@ -76,7 +65,7 @@ When touching this logic, preserve the precedence order in `categorizeTransactio
 
 ### Excluding a transaction (soft delete)
 
-`DELETE /api/transactions/[message_id]` (`handleExcludeTransaction` → `TransactionService.excludeTransaction`) sets `excluded = true` on that row rather than deleting it — for charges that were cancelled/refunded after syncing (e.g. a cancelled Uber ride) but shouldn't count toward totals. The row stays in Supabase; every read path that feeds the dashboard (`getMonthTransactions`, `getPaginatedTransactions` in `src/models/transaction.model.ts`) filters `.eq('excluded', false)`, so excluded transactions disappear from the list, summary, and category/day breakdowns with no separate handling needed elsewhere. `scripts/sync-transactions.js`'s upsert payload never includes the `excluded` column, so a later re-sync can't silently un-exclude a row. There's no restore UI — undoing requires flipping the flag back via Supabase directly (SQL editor or MCP `execute_sql`).
+`DELETE /api/transactions/[message_id]` (`handleExcludeTransaction` → `TransactionService.excludeTransaction`) sets `excluded = true` on that row rather than deleting it — for charges that were cancelled/refunded after ingestion (e.g. a cancelled Uber ride) but shouldn't count toward totals. The row stays in Supabase; every read path that feeds the dashboard (`getMonthTransactions`, `getPaginatedTransactions` in `src/models/transaction.model.ts`) filters `.eq('excluded', false)`, so excluded transactions disappear from the list, summary, and category/day breakdowns with no separate handling needed elsewhere. There's no restore UI — undoing requires flipping the flag back via Supabase directly (SQL editor or MCP `execute_sql`).
 
 ## Supabase MCP
 
@@ -88,4 +77,4 @@ A Supabase MCP server is configured in `.mcp.json` (project ref `hwfxyltobyctzre
 
 ## Environment variables
 
-See `.env.example` for the full list and where each value comes from. Notably: `SUPABASE_SERVICE_KEY` and `GOOGLE_SERVICE_ACCOUNT_JSON` are server/CI-only secrets and must never be referenced from `app/` client code — only from `scripts/` or server-only modules.
+See `.env.example` for the full list and where each value comes from. Server-only secrets must never be referenced from `app/` client code.

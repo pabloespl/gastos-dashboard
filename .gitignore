@@ -16,8 +16,6 @@ out/
 *credentials*.json
 *service-account*.json
 *secret*.json
-google-service-account.json
-
 # Vercel
 .vercel
 
