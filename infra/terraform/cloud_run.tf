@@ -38,11 +38,11 @@ resource "google_cloud_run_v2_service" "statement_parser" {
       }
 
       env {
-        name = "SUPABASE_SERVICE_ROLE_KEY"
+        name = "SUPABASE_SECRET_KEY"
 
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.supabase_service_role_key.secret_id
+            secret  = google_secret_manager_secret.supabase_secret_key.secret_id
             version = "latest"
           }
         }
