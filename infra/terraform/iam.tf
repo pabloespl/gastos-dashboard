@@ -1,7 +1,7 @@
 resource "google_cloud_run_v2_service_iam_member" "statement_parser_invoker" {
   project  = var.project_id
   location = var.region
-  name     = "statement-parser"
+  name     = google_cloud_run_v2_service.statement_parser.name
 
   role   = "roles/run.invoker"
   member = "serviceAccount:${google_service_account.statement_parser_invoker.email}"
@@ -18,7 +18,7 @@ resource "google_project_iam_member" "pubsub_token_creator" {
   project = var.project_id
   role    = "roles/iam.serviceAccountTokenCreator"
 
-  member = "serviceAccount:service-715439212939@gcp-sa-pubsub.iam.gserviceaccount.com"
+  member = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-pubsub.iam.gserviceaccount.com"
 }
 
 resource "google_project_iam_member" "statement_parser_deployer_run_admin" {
